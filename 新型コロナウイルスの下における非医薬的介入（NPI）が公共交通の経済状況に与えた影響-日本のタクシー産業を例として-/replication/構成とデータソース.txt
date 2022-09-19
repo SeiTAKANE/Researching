@@ -1,0 +1,31 @@
+＊データセット:main_data,transportation_2020,Vdem,mobility
+＊ファイル構成：
+    replication---data---main_data.csv,transportation_2020.csv,vdem.csv,mobility_report_2020.csv,mobility_report_2021.csv
+                |
+                |
+               replication.R
+
+
+＊データソース
+・transportation_2020.csv
+    ・2020年における公共交通の需要数の減少の変化（図1）国土交通省『交通政策白書』、2021年.
+・vdem.csv
+    ・2020年における異動の規制の度合いの国別比較(図2)
+	    “V-Dem Dataset” (https://github.com/vdeminstitute　2022年7月9日最終アクセス)　うちVersion 11.1のCOVID–19 government restrictions (v2cvgovres)を使用。
+・main_data.csv
+    ・タクシーの営業収入
+	    全日本ハイヤー・タクシー連合会『新型コロナウイルス感染症の影響による営業収入の変化』（全タク連緊急サンプル調査）(http://www.jikosoren.jp/data/2022/coronagen-suii.pdf)
+    ・感染者数、死者数
+        NHK『特設サイト 新型コロナウイルス』(https://www3.nhk.or.jp/news/special/coronavirus/data/　2022年7月9日最終アクセス)
+    ・気温
+	    気象庁『過去の気象データ・ダウンロード』(https://www.data.jma.go.jp/gmd/risk/obsdl/ 2022年7月9日最終アクセス)
+    ・人口密度、65歳以上人口
+	    『政府統計の総合窓口（ｅ－Ｓｔａｔ）』(https://www.e-stat.go.jp/regional-statistics/ssdsview/prefectures 2022年7月9日最終アクセス)
+    ・失業率
+        総務省統計局『<参考>労働力調査（基本集計）都道府県別結果』(https://www.stat.go.jp/data/roudou/pref/index.html 2022年7月9日最終アクセス)
+・mobility_report_2020.csv,mobility_report_2021.csv
+    ・主要な場所への人の往来について(表4)
+	    Google 『COVID-19:コミュニティ モビリティ レポート』(https://www.google.com/covid19/mobility/?hl=ja 2022年7月9日最終アクセス)
+
+
+

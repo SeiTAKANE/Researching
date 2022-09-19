@@ -1,0 +1,181 @@
+\documentclass[a4paper,landscape]{jsarticle}
+\special{papersize=\the\paperwidth,\the\paperheight}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{siunitx}
+\usepackage{caption}
+\usepackage {booktabs} 
+\usepackage{pifont}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\newcolumntype{d}{S[input-symbols = ()]}
+
+%start
+\begin{document}
+%記述統計
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{変数の記述統計}
+\begin{tabular}{rlrrrr}
+  \hline
+ & 変数 & 平均 & 標準偏差 & 最小値 & 最大値 \\ 
+  \hline
+ & タクシーの営業収入（対2019年比） & 0.63 & 0.16 & 0.14 & 1.09 \\ 
+ & 死亡率(人口10万人あたり) & 0.32 & 0.60 & 0.00 & 4.93 \\ 
+ & 感染率 (人口10万人あたり) & 15.85 & 28.88 & 0.00 & 289.97 \\ 
+ & 気温(月平均) & 14.84 & 8.08 & -4.40 & 30.70 \\ 
+ & 失業率(月平均:\%) & 2.45 & 0.52 & 0.80 & 3.90 \\ 
+ & 65歳以上人口（2019年） & 763531.92 & 680835.74 & 178000.00 & 3209000.00 \\ 
+ & 人口密度（1haあたり, 2019年） & 6.57 & 11.95 & 1.00 & 63.00 \\ 
+ \hline
+\end{tabular}
+\label{tb-ref}
+\end{table}
+
+
+
+%全体分析結果1
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{緊急事態宣言がタクシーの営業収入（対2019年同月比)に与えた影響}
+\begin{tabular}[t]{lcccccc}
+\toprule
+  & モデル 1 & モデル 2 & モデル 3 & モデル 4 & モデル 5 & モデル 6\\
+\midrule
+緊急事態宣言ダミー & \num{-0.266}(\num{0.013}) & \num{-0.244}(\num{0.008}) & \num{-0.241}(\num{0.007}) & \num{-0.266}(\num{0.008}) & \num{-0.247}(\num{0.007}) & \num{-0.238}(\num{0.007})\\
+LN(死亡率+1) &  &  & \num{-0.024}(\num{0.018}) & \num{-0.111}(\num{0.023}) &  & \num{-0.047}(\num{0.016})\\
+LN(前月死亡率+1) &  &  & \num{0.009}(\num{0.014}) &  & \num{-0.008}(\num{0.017}) & \num{0.040}(\num{0.017})\\
+LN(感染率+1) &  & \num{0.000}(\num{0.003}) &  &  &  & \\
+LN(前月感染率+1) &  & \num{-0.007}(\num{0.003}) &  &  &  & \\
+気温 (度)&  & \num{0.000}(\num{0.001}) & \num{0.000}(\num{0.001}) & \num{-0.005}(\num{0.000}) & \num{-0.001}(\num{0.001}) & \num{-0.001}(\num{0.000})\\
+LN(失業率) &  & \num{0.058}(\num{0.033}) & \num{0.053}(\num{0.032}) & \num{-0.131}(\num{0.053}) & \num{0.016}(\num{0.038}) & \num{0.021}(\num{0.039})\\
+LN(65歳以上人口) &  & \num{0.024}(\num{0.014}) & \num{0.025}(\num{0.015}) &  &  & \\
+LN(人口密度) &  & \num{-0.004}(\num{0.010}) & \num{-0.006}(\num{0.011}) &  &  & \\
+定数項 & \num{0.679}(\num{0.005}) & \num{0.305}(\num{0.179}) & \num{0.292}(\num{0.182}) &  &  & \\
+都道府県固定効果 & &  &  & \checkmark  & \checkmark & \checkmark\\
+月固定効果 & &  &  &  & \\
+\midrule
+サンプルサイズ & \num{658} & \num{611} & \num{611} & \num{658} & \num{611} & \num{611}\\
+自由度修正済決定係数(R2 Adj) & \num{0.393} & \num{0.485} & \num{0.482} & \num{0.605} & \num{0.685} & \num{0.668}\\
+CR標準誤差 & & \checkmark   & \checkmark & \checkmark  & \checkmark & \checkmark\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%全体分析結果2(年固定効果追加)
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{緊急事態宣言がタクシーの営業収入（対2019年同月比)に与えた影響}
+\begin{tabular}[t]{lccccccc}
+\toprule
+  & モデル 1 & モデル 2 & モデル 3 & モデル 4 & モデル 5 & モデル 6 & モデル 7\\
+\midrule
+緊急事態宣言 & \num{-0.266}(\num{0.013}) & \num{-0.244}(\num{0.008}) & \num{-0.241}(\num{0.007}) & \num{-0.266}(\num{0.008}) & \num{-0.247}(\num{0.007}) & \num{-0.238}(\num{0.007}) & \num{-0.252}(\num{0.008})\\
+LN(死亡率+1) &  &  & \num{-0.024}(\num{0.018}) & \num{-0.111}(\num{0.023}) &  & \num{-0.047}(\num{0.016}) & \num{-0.020}(\num{0.019})\\
+LN（前月死亡率+1) &  &  & \num{0.009}(\num{0.014}) &  & \num{-0.008}(\num{0.017}) & \num{0.040}(\num{0.017}) & \num{0.046}(\num{0.019})\\
+LN(感染率+1) &  & \num{0.000}(\num{0.003}) &  &  &  &  & \\
+LN(前月感染率+1) &  & \num{-0.007}(\num{0.003}) &  &  &  &  & \\
+気温 &  & \num{0.000}(\num{0.001}) & \num{0.000}(\num{0.001}) & \num{-0.005}(\num{0.000}) & \num{-0.001}(\num{0.001}) & \num{-0.001}(\num{0.000}) & \num{-0.002}(\num{0.001})\\
+LN(失業率) &  & \num{0.058}(\num{0.033}) & \num{0.053}(\num{0.032}) & \num{-0.131}(\num{0.053}) & \num{0.016}(\num{0.038}) & \num{0.021}(\num{0.039}) & \num{0.044}(\num{0.036})\\
+LN(65歳以上人口) &  & \num{0.024}(\num{0.014}) & \num{0.025}(\num{0.015}) &  &  &  & \\
+LN(人口密度) &  & \num{-0.004}(\num{0.010}) & \num{-0.006}(\num{0.011}) &  &  &  & \\
+定数項 & \num{0.679}(\num{0.005}) & \num{0.305}(\num{0.179}) & \num{0.292}(\num{0.182}) &  &  &  & \\
+都道府県固定効果 & &  &  & \checkmark  & \checkmark & \checkmark & \checkmark \\
+月固定効果 & &  &  &  & & &\\
+年固定効果 & &  &  &  &  &  & \checkmark \\
+\midrule
+サンプルサイズ & \num{658} & \num{611} & \num{611} & \num{658} & \num{611} & \num{611} & \num{611}\\
+自由度修正済決定係数(R2 Adj) & \num{0.393} & \num{0.485} & \num{0.482} & \num{0.605} & \num{0.685} & \num{0.668} & \num{0.698}\\
+CR標準誤差 & & \checkmark   & \checkmark & \checkmark  & \checkmark & \checkmark &
+\checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%比較分析結果
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{緊急事態宣言がタクシーの営業収入（対2019年同月比)に与えた影響:1回目と2回目の比較}
+\begin{tabular}[t]{lccccc}
+\toprule
+緊急事態宣言  & 1回目(2020年4,5月) & & 2回目（2021年1,2,3月） \\
+  & モデル1-1 & モデル 1-2 & モデル 2-1 & モデル2-2 & モデル 2-3\\
+\midrule
+緊急事態宣言 & \num{-0.294}(\num{0.007}) & \num{-0.297}(\num{0.007}) & \num{-0.020}(\num{0.026}) & \num{-0.011}(\num{0.022}) & \num{0.003}(\num{0.019})\\
+LN(死亡率+1) & \num{-0.074}(\num{0.017}) & \num{-0.094}(\num{0.015}) & \num{-0.081}(\num{0.015}) & \num{-0.110}(\num{0.014}) & \num{-0.049}(\num{0.017})\\
+LN（前月死亡率+1) & \num{-0.004}(\num{0.040}) & \num{0.017}(\num{0.026}) & \num{-0.027}(\num{0.015}) & \num{-0.032}(\num{0.012}) & \num{-0.024}(\num{0.016})\\
+気温 & \num{-0.002}(\num{0.001}) & \num{-0.003}(\num{0.000}) & \num{0.000}(\num{0.001}) & \num{-0.002}(\num{0.000}) & \num{-0.001}(\num{0.001})\\
+LN(失業率) & \num{0.092}(\num{0.035}) & \num{0.105}(\num{0.018}) & \num{0.078}(\num{0.036}) & \num{0.041}(\num{0.032}) & \num{0.061}(\num{0.032})\\
+LN(65歳以上人口) & \num{0.011}(\num{0.016}) &  & \num{0.018}(\num{0.017}) &  & \\
+LN(人口密度) & \num{-0.012}(\num{0.011}) &  & \num{-0.006}(\num{0.012}) &  & \\
+定数項 & \num{0.501}(\num{0.194}) &  & \num{0.372}(\num{0.209}) &  & \\
+都道府県固定効果  &  & \checkmark &   & \checkmark & \checkmark\\
+月固定効果  &  &  &  &  & \checkmark \\
+\midrule
+サンプルサイズ  & \num{470} & \num{470} & \num{517} & \num{517} & \num{517}\\
+自由度修正済決定係数(R2 Adj)  & \num{0.630} & \num{0.830} & \num{0.114} & \num{0.525} & \num{0.737}\\
+CR標準誤差 & \checkmark& \checkmark   & \checkmark & \checkmark  & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%マッチング結果
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{緊急事態宣言がタクシーの営業収入（対2019年同月比)に与えた影響:マッチング手法を用いた推定}
+\begin{tabular}[t]{lccc}
+\toprule
+  & モデル1 & モデル2 & モデル3\\
+\midrule
+緊急事態宣言ダミー & \num{-0.301}(\num{0.009}) & \num{-0.283}(\num{0.007}) & \num{-0.326}(\num{0.012})\\
+LN(死亡率+1) & \num{-0.008}(\num{0.030}) & \num{0.080}(\num{0.023}) & \num{-0.108}(\num{0.049})\\
+LN(前月死亡率+1) & \num{0.114}(\num{0.022}) & \num{0.056}(\num{0.020}) & \num{-0.147}(\num{0.054})\\
+気温(度) & \num{-0.005}(\num{0.002}) & \num{-0.004}(\num{0.001}) & \num{0.004}(\num{0.002})\\
+LN(失業率) & \num{0.086}(\num{0.050}) & \num{0.017}(\num{0.049}) & \num{-0.013}(\num{0.080})\\
+都道府県固定効果  & \checkmark  & \checkmark & \checkmark  \\
+月固定効果  &  &  &   \\
+マッチング手法  & MH最近傍マッチング（ATT） & MH最近傍マッチング（ATC） & CEM  \\
+\midrule
+サンプルサイズ & \num{238} & \num{238} & \num{153}\\
+自由度修正済決定係数(R2 Adj) & \num{0.815} & \num{0.841} & \num{0.909}\\
+CR標準誤差 & \checkmark& \checkmark   & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+\newpage
+\newpage
+\newpage
+
+%t検定
+\begin{table}
+\centering
+\captionsetup{labelformat=empty,labelsep=none}
+\caption{主要場所への人の往来の比較}
+\begin{tabular}{rlrrrr}
+  \hline
+ & 集計場所 & 1回目緊急事態宣言の平均(2020.4.6 - 5.25）( \% ) & 1回目緊急事態宣言以外の期間(-2021.3.31) ( \% ) & 差（95\%CI) & T値（絶対値) \\ 
+  \hline
+ & 小売店,娯楽施設 & \num{-31.64} & \num{-10.97} & ( \num{-23.0}, \num{-18.34} ) & \num{17.38}\\ 
+ & 食料品,薬局 & \num{-1.94} & \num{-0.31} &  ( \num{-3.12}, \num{-0.15} )  & \num{2.16} \\ 
+ & 乗換駅 & \num{-47.10}& \num{-23.69} &  (  \num{-26.03}, \num{-20.76} ) & \num{17.47} \\ 
+ & 職場 & \num{-26.58} & \num{-13.01} &  ( \num{-17.30}, \num{-9.83} )  & \num{7.14} \\ 
+ & 住宅 & \num{13.90} & \num{6.12} &  ( \num{6.30}, \num{9.10} ) & \num{11.03} \\ 
+ & 公園 & \num{-4.52} & \num{-5.903} &  (  \num{-3.73}, \num{6.50} ) & \num{0.53} \\ 
+ \hline
+\end{tabular}
+\label{tb-ref}
+\end{table}
+
+\end{document}
+
+
+
+
+
