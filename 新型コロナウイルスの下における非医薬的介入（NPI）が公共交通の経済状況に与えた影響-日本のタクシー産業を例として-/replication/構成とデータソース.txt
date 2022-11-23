@@ -14,7 +14,7 @@
 	    “V-Dem Dataset” (https://github.com/vdeminstitute　2022年7月9日最終アクセス)　うちVersion 11.1のCOVID–19 government restrictions (v2cvgovres)を使用。
 ・main_data.csv
     ・タクシーの営業収入
-	    全日本ハイヤー・タクシー連合会『新型コロナウイルス感染症の影響による営業収入の変化』（全タク連緊急サンプル調査）(http://www.taxi-japan.or.jp/pdf/jixtuseki.pdf  2022年11月22日最終アクセス。
+	    全日本ハイヤー・タクシー連合会『新型コロナウイルス感染症の影響による営業収入の変化』（全タク連緊急サンプル調査）(http://www.taxi-japan.or.jp/pdf/jixtuseki.pdf  2022年11月22日最終アクセス
     ・感染者数、死者数
         NHK『特設サイト 新型コロナウイルス』(https://www3.nhk.or.jp/news/special/coronavirus/data/　2022年7月9日最終アクセス)
     ・気温
