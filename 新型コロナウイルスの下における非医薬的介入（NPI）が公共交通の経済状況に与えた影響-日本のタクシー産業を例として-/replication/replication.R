@@ -1,7 +1,7 @@
 #新型コロナウイルスの下における非医薬的介入(NPI)が公共交通機関の経済状況に与えた影響-日本のタクシー産業を例として-
 #分析再現コード
 #作成者:早稲田大学現代政治経済研究所:高根晴
-#最終編集日:2022/09/19
+#最終編集日:
 ###############
 #セットアップ #
 ###############
@@ -9,8 +9,7 @@
 #使うパッケージのダウンロード
 install.packages('pacman')
 pacman::p_load(tidyverse,estimatr,gridExtra,choroplethr,choroplethrAdmin1,
-               summarytools,BalanceR,MatchIt,modelsummary,cobalt,rsample, modelsummary,patchwork,xtable)
-
+               summarytools,MatchIt,modelsummary,cobalt,rsample, modelsummary,patchwork,xtable)
 #データのセットアップ(パス構成:./data/*.csv)
 #メインの分析に用いるデータ:図3,表1,表2,表3,図4,付表1,付図1-3
 df_main　<- read.csv("data/main_data.csv")
@@ -113,7 +112,8 @@ variables_mean <- df_main %>% summarise("タクシーの営業収入 (対2019年
                                 "気温(月平均) " = round(mean(average_temperature),digits=2),
                                 "失業率(月平均:%)"= round(mean(unemployment_rate_percent),digits = 2),
                                 "65歳以上人口 (2019年)" = round(mean(over_age65_population),digits = 2),
-                                "人口密度（1haあたり, 2019年）" = round(mean(population_per_density_per_ha),digits = 2))
+                                "人口密度（1haあたり, 2019年）" = round(mean(population_per_density_per_ha),digits = 2),
+                                "ICT従業者比率(2018年)"　= round(mean(prop_workers_in_it_sector),digits = 2))
 
 #縦データに変換
 colnames_variables_mean <- colnames(variables_mean)                    
@@ -127,7 +127,8 @@ variables_sd <- df_main %>% summarise("タクシーの営業収入 (対2019年�
                                                   "気温(月平均) " = round(sd(average_temperature),digits=2),
                                                   "失業率(月平均:%)"= round(sd(unemployment_rate_percent),digits = 2),
                                                   "65歳以上人口 (2019年)" = round(sd(over_age65_population),digits = 2),
-                                                  "人口密度（1haあたり, 2019年）" = round(sd(population_per_density_per_ha),digits = 2))
+                                                  "人口密度（1haあたり, 2019年）" = round(sd(population_per_density_per_ha),digits = 2),
+                                                  "ICT従業者比率(2018年)"　= round(sd(prop_workers_in_it_sector),digits = 2))
 #縦データに変換
 variables_sd <- gather(variables_sd,key = "変数",
                          value = "標準偏差",colnames_variables_mean)  
@@ -139,7 +140,8 @@ variables_min <- df_main %>% summarise("タクシーの営業収入 (対2019年�
                                 "気温(月平均) " = round(min(average_temperature),digits=2),
                                 "失業率(月平均:%)"= round(min(unemployment_rate_percent),digits = 2),
                                 "65歳以上人口 (2019年)" = round(min(over_age65_population),digits = 2),
-                                "人口密度（1haあたり, 2019年）" = round(min(population_per_density_per_ha),digits = 2))
+                                "人口密度（1haあたり, 2019年）" = round(min(population_per_density_per_ha),digits = 2),
+                                "ICT従業者比率(2018年)"　= round(min(prop_workers_in_it_sector),digits = 2))
 #縦データに変換
 variables_min <- gather(variables_min,key = "変数",
                        value = "最小値",colnames_variables_mean) 
@@ -151,7 +153,8 @@ variables_max <- df_main %>% summarise("タクシーの営業収入 (対2019年�
                                        "気温(月平均) " = round(max(average_temperature),digits=2),
                                        "失業率(月平均:%)"= round(max(unemployment_rate_percent),digits = 2),
                                        "65歳以上人口 (2019年)" = round(max(over_age65_population),digits = 2),
-                                       "人口密度（1haあたり, 2019年）" = round(max(population_per_density_per_ha),digits = 2))
+                                       "人口密度（1haあたり, 2019年）" = round(max(population_per_density_per_ha),digits = 2),
+                                       "ICT従業者比率(2018年)"　= round(max(prop_workers_in_it_sector),digits = 2))
 
 #縦データに変換
 variables_max <- gather(variables_max,key = "変数",
@@ -173,12 +176,12 @@ model1_1 <- lm(loss_from_2019 ~ state_of_emergency,data = df_main)
 summary(model1_1)
 
 #モデル2
-model1_2 <-lm_robust(loss_from_2019 ~ state_of_emergency + log(cases_per_population+1) + log(cases_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha),
+model1_2 <-lm_robust(loss_from_2019 ~ state_of_emergency + log(cases_per_population+1) + log(cases_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha)+log(prop_workers_in_it_sector),
                       data = df_main,clusters = pref,se_type = "CR0")
 summary(model1_2)
 
 #モデル3
-model1_3 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha),
+model1_3 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha)+log(prop_workers_in_it_sector),
                        data = df_main,clusters = pref,se_type = "CR0")
 summary(model1_3)
 
@@ -194,7 +197,7 @@ summary(model1_5)
 
 #モデル6
 model1_6 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent),
-                        data = df_main,clusters = pref,se_type = "CR0")
+                        data = df_main,fixed_effects =~ pref,clusters = pref,se_type = "CR0")
 summary(model1_6)
 
 #モデル7
@@ -220,6 +223,7 @@ msummary(list_model_1, estimate = "{estimate}({std.error})",statistic = NULL,
                       "log(unemployment_rate_percent)" = "LN(失業率)",
                       "log(over_age65_population)"　= "LN(65歳以上人口)",
                       "log(population_per_density_per_ha)" = "LN(人口密度)",
+                      "log(prop_workers_in_it_sector)" = "LN(ICT従業者比率)",
                       "(Intercept)" = "定数項"),"latex")
 
 colnames(df_main)
@@ -229,7 +233,7 @@ colnames(df_main)
 ##################################
 
 #モデル1-1
-model_2_1_1 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha),
+model_2_1_1 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha)+log(prop_workers_in_it_sector),
                           data = df_main %>% filter(final_date_month  %in% c("2020/2/29","2020/3/31","2020/4/30","2020/5/31",
                                                "2020/6/30","2020/7/31","2020/8/31","2020/9/30",
                                                "2020/10/31","2020/11/30","2020/12/31")),clusters = pref,se_type = "CR0")
@@ -243,7 +247,7 @@ model_2_1_2 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_po
 summary(model_2_1_2)
 
 #モデル2-1
-model_2_2_1 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha),
+model_2_2_1 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent) + log(over_age65_population)+log(population_per_density_per_ha)+log(prop_workers_in_it_sector),
                           data = df_main %>% filter(final_date_month  %in% c("2020/2/29","2020/3/31",
                                                                              "2020/6/30","2020/7/31","2020/8/31","2020/9/30",
                                                                              "2020/10/31","2020/11/30","2020/12/31","2021/1/31",
@@ -277,6 +281,7 @@ msummary(list_model_2 , estimate = "{estimate}({std.error})",statistic = NULL,
                       "log(unemployment_rate_percent)" = "LN(失業率)",
                       "log(over_age65_population)"　= "LN(65歳以上人口)",
                       "log(population_per_density_per_ha)" = "LN(人口密度)",
+                      "log(prop_workers_in_it_sector)" = "LN(ICT従業者比率)",
                       "(Intercept)" = "定数項"),"latex")
 
 ####################################
@@ -284,24 +289,24 @@ msummary(list_model_2 , estimate = "{estimate}({std.error})",statistic = NULL,
 ####################################
 #マッチング
 #マハラノビス最近マッチング(ATT)   
-df_mhmt_att <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha, 
+df_mhmt_att <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha+prop_workers_in_it_sector, 
                        data = na.omit(df_main), estimand = "ATT",
                        method = "nearest", distance = "mahalanobis")
 #マハラノビス最近マッチング(ATC) 
-df_mhmt_atc <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha, 
+df_mhmt_atc <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha+prop_workers_in_it_sector, 
                            data = na.omit(df_main), estimand = "ATC",
                            method = "nearest", distance = "mahalanobis")
-#crm
-df_cem <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha, 
+#cem
+df_cem <- matchit(state_of_emergency ~ deaths_per_population+deaths_lag+average_temperature+unemployment_rate_percent+over_age65_population+population_per_density_per_ha+prop_workers_in_it_sector, 
                            data = na.omit(df_main), 
                            method = "cem")
 
 #バランスチェック
 #可視化用に変数名を日本語化
 v <- data.frame(old = c("deaths_per_population", "deaths_lag", "average_temperature", "unemployment_rate_percent", 
-                        "over_age65_population", "population_per_density_per_ha"),
+                        "over_age65_population", "population_per_density_per_ha","prop_workers_in_it_sector"),
                 new = c("死亡率", "前月死亡率", "気温", 
-                        "失業率", "65歳以上人口", "人口密度"))
+                        "失業率", "65歳以上人口", "人口密度","ICT従業者比率"))
 
 #付図1
 af_1 <- love.plot(df_mhmt_att, threshold = 0.1, abs = TRUE, grid = TRUE, 
@@ -380,7 +385,8 @@ msummary(list_model_3, estimate = "{estimate}({std.error})",statistic = NULL,
 #######################################
 #ブートストラップによる係数の推定(図4)#
 #######################################
-colnames(df_main)
+#seedのセット
+set.seed(50)
 #モデル6:表1
 #3000回のブートストラップ
 bt_1 <- bootstraps(na.omit(df_main),times = 3000)$splits %>%
@@ -403,7 +409,7 @@ plot_bt_1 <- bt_1 %>% ggplot(aes(x= estimate))+
   geom_vline(xintercept = median(bt_1$estimate),linetype = 2)+
   #geom_label(aes(x=median(bt_1$estimate),y= 15),label = "中央値:-0.245")+
   theme_bw()
-plot_bt_1 
+plot(plot_bt_1)
 #標準誤差
 plot_bt_1_se <- bt_1 %>% ggplot(aes(x= std.error))+
   geom_density()+
@@ -414,7 +420,7 @@ plot_bt_1_se <- bt_1 %>% ggplot(aes(x= std.error))+
   #geom_label(aes(x = median(bt_1$std.error),y= 15),label = "中央値:0.010")+
   theme_bw()
 
-
+plot(plot_bt_1_se)
 
 
 #モデル1-2:表2
