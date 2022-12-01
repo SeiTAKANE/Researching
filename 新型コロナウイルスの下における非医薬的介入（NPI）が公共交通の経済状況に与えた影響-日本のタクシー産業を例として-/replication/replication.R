@@ -31,7 +31,8 @@ f1 <- df_tr2020  %>%
   scale_x_continuous(breaks = seq(1,12,by = 1))+
   scale_y_continuous(limits = c(0,1))+
   labs(x = "月（2020年）",y = "需要数（対2019年同月比）",title = "2020年における公共交通の需要数の変化")+
-  geom_line()
+  geom_line()+
+  theme_bw()
 #確認
 plot(f1)
 
@@ -58,7 +59,8 @@ f2 <- df_restriction_level  %>%
   geom_label(aes(x=0.5,y= 0.64),label = "日本")+
   labs(x = "　年　", y = "移動の規制の度合い",
        title = "2020年COVID19の下における移動の規制の度合いの国別比較")+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme_bw()
 
 #確認
 plot(f2)
@@ -101,7 +103,7 @@ f3 <- df_loss_group_by_date_and_second   %>%
 plot(f3)
 
 #######################################
-#使用する変数の記述統計（付表1）の部分#
+#使用する変数の記述統計（表1）の部分#
 #######################################
 #create descriptive stat 
 names(df_main)
@@ -169,7 +171,7 @@ df_descriptive_stat <- left_join(df_descriptive_stat,variables_max,by="変数")
 xtable(df_descriptive_stat, label="tb-ref", caption="変数の記述統計")
 
 ###########################
-#全体の分析（表1のモデル）#
+#全体の分析（表3のモデル）#
 ###########################
 #モデル1
 model1_1 <- lm(loss_from_2019 ~ state_of_emergency,data = df_main) 
@@ -229,7 +231,7 @@ msummary(list_model_1, estimate = "{estimate}({std.error})",statistic = NULL,
 colnames(df_main)
 
 ##################################
-#1回目、2回目の比較（表2のモデル)#
+#1回目、2回目の比較（表3のモデル)#
 ##################################
 
 #モデル1-1
@@ -285,7 +287,7 @@ msummary(list_model_2 , estimate = "{estimate}({std.error})",statistic = NULL,
                       "(Intercept)" = "定数項"),"latex")
 
 ####################################
-#マッチング（付図1,2,3,表2のモデル)#
+#マッチング（付図1,2,3,表4のモデル)#
 ####################################
 #マッチング
 #マハラノビス最近マッチング(ATT)   
@@ -313,7 +315,7 @@ af_1 <- love.plot(df_mhmt_att, threshold = 0.1, abs = TRUE, grid = TRUE,
          shapes = c(18, 20), color = c("tomato", "royalblue"), 
          var.names = v,
          sample.names = c("調整前", "調整後"),
-         title = "マッチングによる標準化差分の変化:表3モデル1(MHNearest:ATT)") +
+         title = "マッチングによる標準化差分の変化:表4モデル1(MHNearest:ATT)") +
          labs(x = "標準化差分(Standardized mean difference)の絶対値",
          shape = "", size = "", stroke = "", colour = "")
 #確認
@@ -324,7 +326,7 @@ af_2 <- love.plot(df_mhmt_atc, threshold = 0.1, abs = TRUE, grid = TRUE,
           shapes = c(18, 20), color = c("tomato", "royalblue"), 
           var.names = v,
           sample.names = c("調整前", "調整後"),
-          title = "マッチングによる標準化差分の変化:表3モデル2(MHNearest:ATC)") +
+          title = "マッチングによる標準化差分の変化:表4モデル2(MHNearest:ATC)") +
           labs(x = "標準化差分(Standardized mean difference)の絶対値",
           shape = "", size = "", stroke = "", colour = "")
 
@@ -337,7 +339,7 @@ af_3 <- love.plot(df_cem , threshold = 0.1, abs = TRUE, grid = TRUE,
           shapes = c(18, 20), color = c("tomato", "royalblue"), 
           var.names = v,
           sample.names = c("調整前", "調整後"),
-          title = "マッチングによる標準化差分の変化:表3モデル3(CEM)") +
+          title = "マッチングによる標準化差分の変化:表4モデル3(CEM)") +
           labs(x = "標準化差分(Standardized mean difference)の絶対値",
           shape = "", size = "", stroke = "", colour = "")
 plot(af_3)
@@ -387,7 +389,7 @@ msummary(list_model_3, estimate = "{estimate}({std.error})",statistic = NULL,
 #######################################
 #seedのセット
 set.seed(50)
-#モデル6:表1
+#モデル6:表2
 #3000回のブートストラップ
 bt_1 <- bootstraps(na.omit(df_main),times = 3000)$splits %>%
   map(~ lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) + average_temperature+log(unemployment_rate_percent),
@@ -404,7 +406,7 @@ summary(bt_1)
 #係数
 plot_bt_1 <- bt_1 %>% ggplot(aes(x= estimate))+
   geom_density() +
-  labs(x = "β",y = "頻度",title = "係数（モデル6:表1）",
+  labs(x = "β",y = "頻度",title = "係数（モデル6:表2）",
        caption = "")+
   geom_vline(xintercept = median(bt_1$estimate),linetype = 2)+
   #geom_label(aes(x=median(bt_1$estimate),y= 15),label = "中央値:-0.245")+
@@ -423,7 +425,7 @@ plot_bt_1_se <- bt_1 %>% ggplot(aes(x= std.error))+
 plot(plot_bt_1_se)
 
 
-#モデル1-2:表2
+#モデル1-2:表3
 #3000回のブートストラップ
 bt_2 <- bootstraps(df_main %>% filter(final_date_month %in% c("2020/2/29","2020/3/31","2020/4/30","2020/5/31",
                                                  "2020/6/30","2020/7/31","2020/8/31","2020/9/30",
@@ -442,7 +444,7 @@ summary(bt_2)
 #係数
 plot_bt_2 <- bt_2 %>% ggplot(aes(x= estimate))+
   geom_density() +
-  labs(x = "β",y = "頻度",title = "係数（モデル1-2:表2）",
+  labs(x = "β",y = "頻度",title = "係数（モデル1-2:表3）",
        caption = "")+
   geom_vline(xintercept = median(bt_2$estimate),linetype = 2)+
   #geom_label(aes(x=-0.30,y= 15),label = "中央値:-0.297")+
@@ -476,7 +478,7 @@ summary(bt_3)
 #可視化
 plot_bt_3 <- bt_3 %>% ggplot(aes(x= estimate))+
   geom_density() +
-  labs(x = "β",y = "頻度",title = "係数（モデル2-3:表2）",
+  labs(x = "β",y = "頻度",title = "係数（モデル2-3:表3）",
        caption = "")+
   geom_vline(xintercept = median(bt_3$estimate),linetype = 2)+
   #geom_label(aes(x=0.004,y= 15),label = "中央値:0.003")+
