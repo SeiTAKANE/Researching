@@ -355,20 +355,20 @@ df_cem_a <- match.data(df_cem)
 colnames(df_mhmt_att_a)
 model_3_1 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) +average_temperature+log(unemployment_rate_percent),
                       data = df_mhmt_att_a,clusters = pref,fixed_effects = ~pref,
-                      se_type = "CR0")
+                      se_type = "CR0",weights = weights)
 summary(model_3_1)
 
 #モデル2
 model_3_2 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) +average_temperature+log(unemployment_rate_percent),
                        data = df_mhmt_atc_a,clusters = pref,fixed_effects = ~pref,
-                       se_type = "CR0")
+                       se_type = "CR0",weights = weights)
 
 summary(model_3_2)
 
 #モデル3
 model_3_3 <- lm_robust(loss_from_2019 ~ state_of_emergency + log(deaths_per_population+1) + log(deaths_lag+1) +average_temperature+log(unemployment_rate_percent),
                        data = df_cem_a,clusters = pref,fixed_effects = ~pref,
-                       se_type = "CR0")
+                       se_type = "CR0",weights = weights)
 summary(model_3_3)
 
 #モデル1~3までの表への出力(表3の書き出し)
