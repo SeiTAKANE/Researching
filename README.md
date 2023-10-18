@@ -1,2 +1,2 @@
 # Researching
-Uploading manuscript or slides in my researching(mainly policy sciences).
+## I will upload manuscripts, slides, and codes related to the research I conducted.
