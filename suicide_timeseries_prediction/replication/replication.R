@@ -174,33 +174,73 @@ train_for_bsts_us_suicide <- df_main_us %>%
   filter(term <= "2016-12-01") %>% 
   dplyr::select(suicide_rate_total_scaled, query_suicide_scaled:query_religious_belief_scaled)
 
+train_for_bsts_us_suicide_male <- df_main_us %>%
+  filter(term <= "2016-12-01") %>% 
+  dplyr::select(suicide_rate_male_scaled, query_suicide_scaled:query_religious_belief_scaled)
 
+
+train_for_bsts_us_suicide_female <- df_main_us %>%
+  filter(term <= "2016-12-01") %>% 
+  dplyr::select(suicide_rate_female_scaled, query_suicide_scaled:query_religious_belief_scaled)
+
+
+#test
 test_for_bsts_us_suicide<- df_main_us %>%
   dplyr::select(suicide_rate_total_scaled,query_suicide_scaled:query_religious_belief_scaled)
 
+test_for_bsts_us_suicide_male <- df_main_us %>%
+  dplyr::select(suicide_rate_male_scaled, query_suicide_scaled:query_religious_belief_scaled)
+
+test_for_bsts_us_suicide_female <- df_main_us %>%
+  dplyr::select(suicide_rate_female_scaled, query_suicide_scaled:query_religious_belief_scaled)
+
 
 test_for_bsts_us_suicide$suicide_rate_total_scaled[(nrow(test_for_bsts_us_suicide)-36+1):nrow(test_for_bsts_us_suicide)] <- NA
+test_for_bsts_us_suicide_male$suicide_rate_male_scaled[(nrow(test_for_bsts_us_suicide_male)-36+1):nrow(test_for_bsts_us_suicide_male)] <- NA
+test_for_bsts_us_suicide_female$suicide_rate_female_scaled[(nrow(test_for_bsts_us_suicide_female)-36+1):nrow(test_for_bsts_us_suicide_female)] <- NA
 #JP
 train_for_bsts_jp_suicide <- df_main_jp %>%
   filter(term <= "2016-12-01") %>% 
   dplyr::select(suicide_rate_total_scaled, query_suicide_scaled:query_major_depression_scaled)
 
+train_for_bsts_jp_suicide_male <- df_main_jp %>%
+  filter(term <= "2016-12-01") %>% 
+  dplyr::select(suicide_rate_male_scaled, query_suicide_scaled:query_major_depression_scaled)
+
+train_for_bsts_jp_suicide_female <- df_main_jp %>%
+  filter(term <= "2016-12-01") %>% 
+  dplyr::select(suicide_rate_female_scaled, query_suicide_scaled:query_major_depression_scaled)
 
 
-names(df_main_jp)
+#test
 test_for_bsts_jp_suicide <- df_main_jp %>%
   dplyr::select(suicide_rate_total_scaled,query_suicide_scaled:query_major_depression_scaled)
 
+test_for_bsts_jp_suicide_male <- df_main_jp %>%
+  dplyr::select(suicide_rate_male_scaled, query_suicide_scaled:query_major_depression_scaled)
+
+test_for_bsts_jp_suicide_female <- df_main_jp %>%
+  dplyr::select(suicide_rate_female_scaled, query_suicide_scaled:query_major_depression_scaled)
+
+
 
 test_for_bsts_jp_suicide$suicide_rate_total_scaled[(nrow(test_for_bsts_jp_suicide)-36+1):nrow(test_for_bsts_jp_suicide)] <- NA
+test_for_bsts_jp_suicide_male$suicide_rate_male_scaled[(nrow(test_for_bsts_jp_suicide_male)-36+1):nrow(test_for_bsts_jp_suicide_male)] <- NA
+test_for_bsts_jp_suicide_female$suicide_rate_female_scaled[(nrow(test_for_bsts_jp_suicide_female)-36+1):nrow(test_for_bsts_jp_suicide_female)] <- NA
 
 
 
 #create data frame for validation
 #US
 val_us_suicide <- df_main_us$suicide_rate_total[df_main_us$term >= "2017-01-01" & df_main_us$term <= "2017-12-01" ]
-val_jp_suicide <- df_main_jp$suicide_rate_total[df_main_jp$term >= "2017-01-01" & df_main_jp$term <= "2017-12-01" ]
+val_us_suicide_male <- df_main_us$suicide_rate_male[df_main_us$term >= "2017-01-01" & df_main_us$term <= "2017-12-01"]
+val_us_suicide_female <- df_main_us$suicide_rate_female[df_main_us$term >= "2017-01-01" & df_main_us$term <= "2017-12-01"]
 
+
+#JP
+val_jp_suicide <- df_main_jp$suicide_rate_total[df_main_jp$term >= "2017-01-01" & df_main_jp$term <= "2017-12-01" ]
+val_jp_suicide_male <- df_main_jp$suicide_rate_male[df_main_jp$term >= "2017-01-01" & df_main_jp$term <= "2017-12-01"]
+val_jp_suicide_female <- df_main_jp$suicide_rate_female[df_main_jp$term >= "2017-01-01" & df_main_jp$term <= "2017-12-01"]
 
 
 #JP
@@ -211,6 +251,19 @@ test_us_suicide <- data.frame(term = df_main_us$term[df_main_us$term >= "2018-01
                               true_rate = df_main_us$suicide_rate_total[df_main_us$term >= "2018-01-01"],
                               true_num = df_main_us$num_suicide_total[df_main_us$term >= "2018-01-01"])
 
+test_us_suicide_male <- data.frame(
+  term = df_main_us$term[df_main_us$term >= "2018-01-01"],
+  pop = df_main_us$pop_male[df_main_us$term >= "2018-01-01"],
+  true_rate = df_main_us$suicide_rate_male[df_main_us$term >= "2018-01-01"],
+  true_num = df_main_us$num_suicide_male[df_main_us$term >= "2018-01-01"]
+)
+
+test_us_suicide_female <- data.frame(
+  term = df_main_us$term[df_main_us$term >= "2018-01-01"],
+  pop = df_main_us$pop_female[df_main_us$term >= "2018-01-01"],
+  true_rate = df_main_us$suicide_rate_female[df_main_us$term >= "2018-01-01"],
+  true_num = df_main_us$num_suicide_female[df_main_us$term >= "2018-01-01"]
+)
 
 
 #JP
@@ -219,31 +272,74 @@ test_jp_suicide <- data.frame(term = df_main_jp$term[df_main_jp$term >= "2018-01
                               true_rate = df_main_jp$suicide_rate_total[df_main_jp$term >= "2018-01-01"],
                               true_num = df_main_jp$num_suicide_total[df_main_jp$term >= "2018-01-01"])
 
+test_jp_suicide_male <- data.frame(
+  term = df_main_jp$term[df_main_jp$term >= "2018-01-01"],
+  pop = df_main_jp$pop_male[df_main_jp$term >= "2018-01-01"],
+  true_rate = df_main_jp$suicide_rate_male[df_main_jp$term >= "2018-01-01"],
+  true_num = df_main_jp$num_suicide_male[df_main_jp$term >= "2018-01-01"]
+)
+
+test_jp_suicide_female <- data.frame(
+  term = df_main_jp$term[df_main_jp$term >= "2018-01-01"],
+  pop = df_main_jp$pop_female[df_main_jp$term >= "2018-01-01"],
+  true_rate = df_main_jp$suicide_rate_female[df_main_jp$term >= "2018-01-01"],
+  true_num = df_main_jp$num_suicide_female[df_main_jp$term >= "2018-01-01"]
+)
 
 
 # descriptive statistics --------------------------------------------------
-p_trend_us <- ggplot(df_main_us, aes(x = term, y = suicide_rate_total)) +
-  geom_line() +
+p_trend_us <- ggplot(df_main_us, aes(x = term)) +
+  geom_line(aes(y = suicide_rate_total, color = "Total"), size = 1) +
+  geom_line(aes(y = suicide_rate_male, color = "Male"), size = 1) +
+  geom_line(aes(y = suicide_rate_female, color = "Female"), size = 1) +
   theme_minimal() +
-  labs(title = "US Suicide Rate Over Time (Jan 2004 - Dec2019)",
-       x = "Term (Jan 2004 - Dec2019)",
-       y = "Suicide Rate") +
-  scale_y_continuous(limits = c(0,NA)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  labs(title = "US Suicide Rate Over Time (Jan 2004 - Dec 2019)",
+       x = "Term (Jan 2004 - Dec 2019)",
+       y = "Suicide Rate",
+       color = "Gender") +
+  scale_y_continuous(limits = c(0, NA)) +
+  scale_color_manual(values = c("Total" = "black", "Male" = "blue", "Female" = "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
 
 plot(p_trend_us)
 
-p_trend_jp <- ggplot(df_main_jp, aes(x = term, y = suicide_rate_total)) +
-  geom_line() +
+# For Japan data
+p_trend_jp <- ggplot(df_main_jp, aes(x = term)) +
+  geom_line(aes(y = suicide_rate_total, color = "Total"), size = 1) +
+  geom_line(aes(y = suicide_rate_male, color = "Male"), size = 1) +
+  geom_line(aes(y = suicide_rate_female, color = "Female"), size = 1) +
   theme_minimal() +
-  labs(title = "Japan Suicide Rate Over Time (Jan 2008 - Dec2019)",
-       x = "Term (Jan 2008 - Dec2019)",
+  labs(title = "Japan Suicide Rate Over Time (Jan 2008 - Dec 2019)",
+       x = "Term (Jan 2008 - Dec 2019)",
        y = "Suicide Rate",
-       caption = "Source: US Data") +
-  scale_y_continuous(limits = c(0,NA)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+       color = "Gender",
+       caption = "Source: Japan Data") +
+  scale_y_continuous(limits = c(0, NA)) +
+  scale_color_manual(values = c("Total" = "black", "Male" = "blue", "Female" = "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
 
 plot(p_trend_jp)
+
+
+#adftest
+# US data ADF test
+us_adf_total <- adf.test(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"], k=11, alternative = "stationary")
+us_adf_male <- adf.test(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"], k=11, alternative = "stationary")
+us_adf_female <- adf.test(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"], k=11, alternative = "stationary")
+
+# JP data ADF test
+jp_adf_total <- adf.test(df_main_jp$suicide_rate_total[df_main_jp$term <= "2016-12-01"], k=11, alternative = "stationary")
+jp_adf_male <- adf.test(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"], k=11, alternative = "stationary")
+jp_adf_female <- adf.test(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"], k=11, alternative = "stationary")
+
+print(us_adf_total)
+print(us_adf_male)
+print(us_adf_female)
+print(jp_adf_total)
+print(jp_adf_male)
+print(jp_adf_female)
 
 
 # model selection (US) ---------------------------------------------------------
@@ -335,6 +431,8 @@ ss_us_suicide_tv_sd <- AddSeasonal(ss_us_suicide_tv_sd, train_for_bsts_us_suicid
 ss_us_suicide_tv_sd <- AddDynamicRegression(ss_us_suicide_tv_sd,formula(suicide_rate_total_scaled ~ 
                                                                           query_suicide_scaled + query_depression_scaled),data = train_for_bsts_us_suicide)
 
+
+?AddDynamicRegression
 # Define grid search parameters
 iterations <- c(2000,4000,8000,16000)
 burn_in_percentages <- c(0.1,0.20,0.30,0.40)
@@ -529,6 +627,7 @@ pre_bsts_us_suicide_tv_all <- predict(model_bsts_us_suicide_tv_all,
                                       burn = best_model_us_suicide_tv_all$burn_in,
                                       seed = 42)
 
+
 pre_bsts_us_suicide_tv_all <- pre_bsts_us_suicide_tv_all$mean
 
 # Inverse scale transformation for entire prediction
@@ -651,6 +750,8 @@ final_model_bsts_us_suicide_spike_slab <- bsts(formula_us,
                                                family = "gaussian", 
                                                seed = 42)
 
+
+
 # Plot components
 plot(final_model_bsts_us_suicide_spike_slab, "comp")+
 title("US Model (4)")
@@ -663,6 +764,10 @@ pre_bsts_us_suicide_spike_slab <- predict(final_model_bsts_us_suicide_spike_slab
                                           burn = best_model_us_suicide_spike_slab$burn_in,
                                           seed = 42)
 
+# Get 80% confidence intervals for predictions
+predictions_ci <- apply(pre_bsts_us_suicide_spike_slab$distribution, 2, quantile, probs = c(0.1, 0.9))
+
+# Get 80% mean for predictions
 pre_bsts_us_suicide_spike_slab <- pre_bsts_us_suicide_spike_slab$mean
 
 # Inverse scale transformation for entire prediction
@@ -672,13 +777,917 @@ pre_bsts_us_suicide_rate_spike_slab <- scale_max_min_vector_inverse(
   max(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"])
 )
 
+# Apply inverse scale transformation to confidence intervals
+pre_bsts_us_suicide_rate_spike_slab_lwr <- scale_max_min_vector_inverse(
+  predictions_ci[1,], 
+  min(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"])
+)
+
+pre_bsts_us_suicide_rate_spike_slab_upr <- scale_max_min_vector_inverse(
+  predictions_ci[2,], 
+  min(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_total[df_main_us$term <= "2016-12-01"])
+)
+
+
 # Predict suicide rate and number for test set
 test_us_suicide$pre_rate_model_4 <- pre_bsts_us_suicide_rate_spike_slab[(nrow(test_for_bsts_us_suicide)-24+1):nrow(test_for_bsts_us_suicide)]
 test_us_suicide$pre_num_model_4 <- (test_us_suicide$pre_rate_model_4 * test_us_suicide$pop) / 100000
 
+# Add confidence intervals to test data
+test_us_suicide$pre_rate_model_4_lwr <- pre_bsts_us_suicide_rate_spike_slab_lwr[(nrow(test_for_bsts_us_suicide)-24+1):nrow(test_for_bsts_us_suicide)]
+test_us_suicide$pre_rate_model_4_upr <- pre_bsts_us_suicide_rate_spike_slab_upr[(nrow(test_for_bsts_us_suicide)-24+1):nrow(test_for_bsts_us_suicide)]
+
+# Calculate confidence intervals for number of suicides
+test_us_suicide$pre_num_model_4_lwr <- (test_us_suicide$pre_rate_model_4_lwr * test_us_suicide$pop) / 100000
+test_us_suicide$pre_num_model_4_upr <- (test_us_suicide$pre_rate_model_4_upr * test_us_suicide$pop) / 100000
+
+
 # Confirm accuracy for test set
 print(accuracy(test_us_suicide$pre_rate_model_4,test_us_suicide$true_rate))
 print(accuracy(test_us_suicide$pre_num_model_4,test_us_suicide$true_num))
+
+# model selection (US Male) ---------------------------------------------------------
+# model (1) ----------------------------------------------------------------
+#add local level
+ss_us_suicide_trend_seas_male <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_male$suicide_rate_male_scaled)
+#add seasonality
+ss_us_suicide_trend_seas_male <- AddSeasonal(ss_us_suicide_trend_seas_male, train_for_bsts_us_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_us_model_1_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_trend_seas_male <- bsts(train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                                  state.specification = ss_us_suicide_trend_seas_male,
+                                                  niter = iter,
+                                                  family = "gaussian",
+                                                  seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_trend_seas_male <- predict(model_bsts_us_suicide_trend_seas_male, 
+                                                   horizon = 12,
+                                                   niter = iter,
+                                                   burn = burn,
+                                                   seed = 42)
+    
+    pre_bsts_us_suicide_trend_seas_male <- pre_bsts_us_suicide_trend_seas_male$mean
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_trend_seas_male <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_trend_seas_male, 
+      min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_trend_seas_male, val_us_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_us_model_1_male <- rbind(model_selection_us_model_1_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_trend_seas_male <- model_selection_us_model_1_male[which.min(model_selection_us_model_1_male$MAPE), ]
+
+#calculation final model
+model_bsts_us_suicide_trend_seas_male <- bsts(train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                              state.specification = ss_us_suicide_trend_seas_male,
+                                              niter = best_model_us_suicide_trend_seas_male$iterations,
+                                              family = "gaussian",
+                                              seed = 42)
+
+#components
+plot(model_bsts_us_suicide_trend_seas_male,"comp")+
+  title("US Male Model (1)")
+
+#predict suicide rate
+pre_bsts_us_suicide_trend_seas_male <- predict(model_bsts_us_suicide_trend_seas_male,
+                                               horizon = 36,
+                                               niter = best_model_us_suicide_trend_seas_male$iterations,
+                                               burn = best_model_us_suicide_trend_seas_male$burn_in,
+                                               seed = 42)
+pre_bsts_us_suicide_trend_seas_male <- pre_bsts_us_suicide_trend_seas_male$mean
+pre_bsts_us_suicide_rate_trend_seas_male <- scale_max_min_vector_inverse(pre_bsts_us_suicide_trend_seas_male,
+                                                                         min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+                                                                         max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]))
+
+#predict suicide rate and number for test set
+test_us_suicide_male$pre_rate_model_1 <- pre_bsts_us_suicide_rate_trend_seas_male[13:length(pre_bsts_us_suicide_rate_trend_seas_male)]
+test_us_suicide_male$pre_num_model_1 <- (test_us_suicide_male$pre_rate_model_1 * test_us_suicide_male$pop) / 100000
+
+#confirm accuracy for test set
+#rate
+print(accuracy(test_us_suicide_male$pre_rate_model_1, test_us_suicide_male$true_rate))
+#number
+print(accuracy(test_us_suicide_male$pre_num_model_1, test_us_suicide_male$true_num))
+
+# model (2) ----------------------------------------------------------------
+#add local level
+ss_us_suicide_tv_sd_male <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_male$suicide_rate_male_scaled)
+
+#add seasonality
+ss_us_suicide_tv_sd_male <- AddSeasonal(ss_us_suicide_tv_sd_male, train_for_bsts_us_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+#add regression
+ss_us_suicide_tv_sd_male <- AddDynamicRegression(ss_us_suicide_tv_sd_male,
+                                                 formula(suicide_rate_male_scaled ~ 
+                                                           query_suicide_scaled + query_depression_scaled),
+                                                 data = train_for_bsts_us_suicide_male)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_us_model_2_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_tv_sd_male <- bsts(formula = train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                             state.specification = ss_us_suicide_tv_sd_male,
+                                             niter = iter,
+                                             family = "gaussian",
+                                             seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_tv_sd_male <- predict(model_bsts_us_suicide_tv_sd_male,
+                                              newdata = test_for_bsts_us_suicide_male,
+                                              niter = iter,
+                                              burn = burn,
+                                              seed = 42)
+    
+    pre_bsts_us_suicide_tv_sd_male <- pre_bsts_us_suicide_tv_sd_male$mean[(nrow(test_for_bsts_us_suicide_male)-36+1):(nrow(test_for_bsts_us_suicide_male)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_tv_sd_male <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_tv_sd_male, 
+      min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_tv_sd_male, val_us_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_us_model_2_male <- rbind(model_selection_us_model_2_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_tv_sd_male <- model_selection_us_model_2_male[which.min(model_selection_us_model_2_male$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_us_suicide_tv_sd_male <- bsts(formula = train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                         state.specification = ss_us_suicide_tv_sd_male,
+                                         niter = best_model_us_suicide_tv_sd_male$iterations,
+                                         family = "gaussian",
+                                         seed = 42)
+
+#components
+plot(model_bsts_us_suicide_tv_sd_male, "comp")+
+  title("US Male Model (2)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_tv_sd_male <- predict(model_bsts_us_suicide_tv_sd_male,
+                                          newdata = test_for_bsts_us_suicide_male,
+                                          niter = best_model_us_suicide_tv_sd_male$iterations,
+                                          burn = best_model_us_suicide_tv_sd_male$burn_in,
+                                          seed = 42)
+
+pre_bsts_us_suicide_tv_sd_male <- pre_bsts_us_suicide_tv_sd_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_tv_sd_male <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_tv_sd_male, 
+  min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_male$pre_rate_model_2 <- pre_bsts_us_suicide_rate_tv_sd_male[(nrow(test_for_bsts_us_suicide_male)-24+1):nrow(test_for_bsts_us_suicide_male)]
+test_us_suicide_male$pre_num_model_2 <- (test_us_suicide_male$pre_rate_model_2 * test_us_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_male$pre_rate_model_2, test_us_suicide_male$true_rate))
+print(accuracy(test_us_suicide_male$pre_num_model_2, test_us_suicide_male$true_num))
+
+# model (3) ----------------------------------------------------------------
+#add local levels
+ss_us_suicide_tv_all_male <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_male$suicide_rate_male_scaled)
+
+#add seasonality
+ss_us_suicide_tv_all_male <- AddSeasonal(ss_us_suicide_tv_all_male, train_for_bsts_us_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+#regression
+ss_us_suicide_tv_all_male <- AddDynamicRegression(ss_us_suicide_tv_all_male,
+                                                  formula(suicide_rate_male_scaled ~                                                                      
+                                                            query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                                    
+                                                            query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                                    
+                                                            query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                                    
+                                                            query_how_to_commit_suicide_scaled +                                                                    
+                                                            query_manic_depression_scaled + query_social_welfare_scaled +                                                                    
+                                                            query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                                    
+                                                            query_suicide_hotline_scaled + query_suicide_help_scaled +                                                                    
+                                                            query_severe_depression_scaled + query_suicide_attempt_scaled +                                                                    
+                                                            query_insomnia_scaled +                                                                    
+                                                            query_headache_scaled + query_suicidal_thoughts_scaled +                                                                    
+                                                            query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                                    
+                                                            query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                                    
+                                                            query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                                    
+                                                            query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                                    
+                                                            query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                                    
+                                                            query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                                    
+                                                            query_illicit_drugs_scaled + query_social_benefits_scaled +                                                                    
+                                                            query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                                    
+                                                            query_domestic_violence_scaled + query_hypnotics_scaled +                                                                    
+                                                            query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                                    
+                                                            query_suicide_prevention_scaled + query_lawsuit_scaled +                                                                    
+                                                            query_alcohol_abstinence_scaled + query_religious_belief_scaled),                                         
+                                                  data = train_for_bsts_us_suicide_male)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_us_model_3_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_tv_all_male <- bsts(formula = train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                              state.specification = ss_us_suicide_tv_all_male,
+                                              niter = iter,
+                                              family = "gaussian",
+                                              seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_tv_all_male <- predict(model_bsts_us_suicide_tv_all_male,
+                                               newdata = test_for_bsts_us_suicide_male,
+                                               niter = iter,
+                                               burn = burn,
+                                               seed = 42)
+    
+    pre_bsts_us_suicide_tv_all_male <- pre_bsts_us_suicide_tv_all_male$mean[(nrow(test_for_bsts_us_suicide_male)-36+1):(nrow(test_for_bsts_us_suicide_male)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_tv_all_male <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_tv_all_male, 
+      min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_tv_all_male, val_us_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_us_model_3_male <- rbind(model_selection_us_model_3_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_tv_all_male <- model_selection_us_model_3_male[which.min(model_selection_us_model_3_male$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_us_suicide_tv_all_male <- bsts(formula = train_for_bsts_us_suicide_male$suicide_rate_male_scaled,
+                                          state.specification = ss_us_suicide_tv_all_male,
+                                          niter = best_model_us_suicide_tv_all_male$iterations,
+                                          family = "gaussian",
+                                          seed = 42)
+
+# Plot components
+plot(model_bsts_us_suicide_tv_all_male, "comp")+
+  title("US Male Model (3)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_tv_all_male <- predict(model_bsts_us_suicide_tv_all_male,
+                                           newdata = test_for_bsts_us_suicide_male,
+                                           niter = best_model_us_suicide_tv_all_male$iterations,
+                                           burn = best_model_us_suicide_tv_all_male$burn_in,
+                                           seed = 42)
+
+pre_bsts_us_suicide_tv_all_male <- pre_bsts_us_suicide_tv_all_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_tv_all_male <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_tv_all_male, 
+  min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_male$pre_rate_model_3 <- pre_bsts_us_suicide_rate_tv_all_male[(nrow(test_for_bsts_us_suicide_male)-24+1):nrow(test_for_bsts_us_suicide_male)]
+test_us_suicide_male$pre_num_model_3 <- (test_us_suicide_male$pre_rate_model_3 * test_us_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_male$pre_rate_model_3, test_us_suicide_male$true_rate))
+print(accuracy(test_us_suicide_male$pre_num_model_3, test_us_suicide_male$true_num))
+
+# model (4) ---------------------------------------------------------------
+# Add local level
+ss_us_suicide_spike_slab_male <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_male$suicide_rate_male_scaled)
+
+# Add seasonality
+ss_us_suicide_spike_slab_male <- AddSeasonal(ss_us_suicide_spike_slab_male, train_for_bsts_us_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+# Define the formula
+formula_us_male <- formula(suicide_rate_male_scaled ~                                                            
+                             query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                           
+                             query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                           
+                             query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                           
+                             query_how_to_commit_suicide_scaled +                                                           
+                             query_manic_depression_scaled + query_social_welfare_scaled +                                                           
+                             query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                           
+                             query_suicide_hotline_scaled + query_suicide_help_scaled +                                                           
+                             query_severe_depression_scaled + query_suicide_attempt_scaled +                                                           
+                             query_insomnia_scaled +                                                           
+                             query_headache_scaled + query_suicidal_thoughts_scaled +                                                           
+                             query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                           
+                             query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                           
+                             query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                           
+                             query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                           
+                             query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                           
+                             query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                           
+                             query_illicit_drugs_scaled + query_social_benefits_scaled +                                                           
+                             query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                           
+                             query_domestic_violence_scaled + query_hypnotics_scaled +                                                           
+                             query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                           
+                             query_suicide_prevention_scaled + query_lawsuit_scaled +                                                           
+                             query_alcohol_abstinence_scaled + query_religious_belief_scaled)
+
+# Count the number of query
+n_predictors <- ncol(train_for_bsts_us_suicide_male) - 1
+
+# Define grid search parameters
+iterations <- c(2000, 4000, 8000, 16000)
+burn_in_percentages <- c(0.1, 0.20, 0.30, 0.40)
+pi_values <- c(0.05, 0.1, 0.15, 0.20)
+
+# Create a dataframe to store results
+model_selection_us_model_4_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    for (pi in pi_values) {
+      # Calculate burn-in period and expected model size
+      burn <- round(iter * burn_percent)
+      expected_model_size <- n_predictors * pi
+      
+      # Fit the model
+      model_bsts_us_suicide_spike_slab_male <- bsts(formula_us_male,
+                                                    data = train_for_bsts_us_suicide_male, 
+                                                    state.specification = ss_us_suicide_spike_slab_male, 
+                                                    niter = iter,
+                                                    expected.model.size = expected_model_size, 
+                                                    family = "gaussian", 
+                                                    seed = 42)
+      
+      # Make predictions
+      pre_bsts_us_suicide_spike_slab_male <- predict(model_bsts_us_suicide_spike_slab_male,
+                                                     newdata = test_for_bsts_us_suicide_male,
+                                                     niter = iter,
+                                                     burn = burn,
+                                                     seed = 42)
+      
+      pre_bsts_us_suicide_spike_slab_male <- pre_bsts_us_suicide_spike_slab_male$mean[(nrow(test_for_bsts_us_suicide_male)-36+1):(nrow(test_for_bsts_us_suicide_male)-24)]
+      
+      # Inverse scale transformation
+      pre_bsts_us_suicide_rate_spike_slab_male <- scale_max_min_vector_inverse(
+        pre_bsts_us_suicide_spike_slab_male, 
+        min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+        max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics
+      accuracy_results <- accuracy(pre_bsts_us_suicide_rate_spike_slab_male, val_us_suicide_male)
+      
+      # Add results to the dataframe
+      model_selection_us_model_4_male <- rbind(model_selection_us_model_4_male, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          pi = pi,
+                                                          expected_model_size = expected_model_size,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+    }
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_spike_slab_male <- model_selection_us_model_4_male[which.min(model_selection_us_model_4_male$MAPE), ]
+
+# Calculate final model with best parameters
+final_model_bsts_us_suicide_spike_slab_male <- bsts(formula_us_male,
+                                                    data = train_for_bsts_us_suicide_male, 
+                                                    state.specification = ss_us_suicide_spike_slab_male, 
+                                                    niter = best_model_us_suicide_spike_slab_male$iterations,
+                                                    expected.model.size = best_model_us_suicide_spike_slab_male$expected_model_size, 
+                                                    family = "gaussian", 
+                                                    seed = 42)
+
+# Plot components
+plot(final_model_bsts_us_suicide_spike_slab_male, "comp") +
+  title("US Male Model (4)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_spike_slab_male <- predict(final_model_bsts_us_suicide_spike_slab_male,
+                                               newdata = test_for_bsts_us_suicide_male,
+                                               niter = best_model_us_suicide_spike_slab_male$iterations,
+                                               burn = best_model_us_suicide_spike_slab_male$burn_in,
+                                               seed = 42)
+
+pre_bsts_us_suicide_spike_slab_male <- pre_bsts_us_suicide_spike_slab_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_spike_slab_male <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_spike_slab_male, 
+  min(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_male[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_male$pre_rate_model_4 <- pre_bsts_us_suicide_rate_spike_slab_male[(nrow(test_for_bsts_us_suicide_male)-24+1):nrow(test_for_bsts_us_suicide_male)]
+test_us_suicide_male$pre_num_model_4 <- (test_us_suicide_male$pre_rate_model_4 * test_us_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_male$pre_rate_model_4, test_us_suicide_male$true_rate))
+print(accuracy(test_us_suicide_male$pre_num_model_4, test_us_suicide_male$true_num))
+
+# model selection (US Female) ---------------------------------------------------------
+# model (1) ----------------------------------------------------------------
+#add local level
+ss_us_suicide_trend_seas_female <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_female$suicide_rate_female_scaled)
+#add seasonality
+ss_us_suicide_trend_seas_female <- AddSeasonal(ss_us_suicide_trend_seas_female, train_for_bsts_us_suicide_female$suicide_rate_female_scaled, nseasons=12)
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+# Create a dataframe to store results
+model_selection_us_model_1_female <- data.frame()
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_trend_seas_female <- bsts(train_for_bsts_us_suicide_female$suicide_rate_female_scaled,
+                                                    state.specification = ss_us_suicide_trend_seas_female,
+                                                    niter = iter,
+                                                    family = "gaussian",
+                                                    seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_trend_seas_female <- predict(model_bsts_us_suicide_trend_seas_female, 
+                                                     horizon = 12,
+                                                     niter = iter,
+                                                     burn = burn,
+                                                     seed = 42)
+    
+    pre_bsts_us_suicide_trend_seas_female <- pre_bsts_us_suicide_trend_seas_female$mean
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_trend_seas_female <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_trend_seas_female, 
+      min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_trend_seas_female,val_us_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_us_model_1_female <- rbind(model_selection_us_model_1_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+# Find the best model based on MAPE
+best_model_us_suicide_trend_seas_female <- model_selection_us_model_1_female[which.min(model_selection_us_model_1_female$MAPE), ]
+#calculation final model
+model_bsts_us_suicide_trend_seas_female <- bsts(train_for_bsts_us_suicide_female$suicide_rate_female_scaled,state.specification = ss_us_suicide_trend_seas_female , niter = best_model_us_suicide_trend_seas_female$iterations,
+                                                family = "gaussian",seed = 42)
+
+#components
+plot(model_bsts_us_suicide_trend_seas_female,"comp")+
+  title("US Female Model (1)")
+
+#predict suicide rate
+pre_bsts_us_suicide_trend_seas_female <- predict(model_bsts_us_suicide_trend_seas_female, horizon = 36,niter = best_model_us_suicide_trend_seas_female$iterations,burn = best_model_us_suicide_trend_seas_female$burn_in,seed = 42)
+pre_bsts_us_suicide_trend_seas_female <- pre_bsts_us_suicide_trend_seas_female$mean
+pre_bsts_us_suicide_rate_trend_seas_female <- scale_max_min_vector_inverse(pre_bsts_us_suicide_trend_seas_female, min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]), max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]))
+#predict suicide rate and number for test set
+test_us_suicide_female$pre_rate_model_1  <- pre_bsts_us_suicide_rate_trend_seas_female[13:length(pre_bsts_us_suicide_rate_trend_seas_female)]
+test_us_suicide_female$pre_num_model_1 <- (test_us_suicide_female$pre_rate_model_1*test_us_suicide_female$pop)/100000
+
+#confirm accuracy for test set
+#rate
+print(accuracy(test_us_suicide_female$pre_rate_model_1,test_us_suicide_female$true_rate))
+#number
+print(accuracy(test_us_suicide_female$pre_num_model_1,test_us_suicide_female$true_num))
+
+# model (2) ----------------------------------------------------------------
+#add local level
+ss_us_suicide_tv_sd_female <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_female$suicide_rate_female_scaled)
+
+#add seasonality
+ss_us_suicide_tv_sd_female <- AddSeasonal(ss_us_suicide_tv_sd_female, train_for_bsts_us_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+#add regression
+ss_us_suicide_tv_sd_female <- AddDynamicRegression(ss_us_suicide_tv_sd_female,formula(suicide_rate_female_scaled ~ 
+                                                                                        query_suicide_scaled + query_depression_scaled),data = train_for_bsts_us_suicide_female)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_us_model_2_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_tv_sd_female <- bsts(formula = train_for_bsts_us_suicide_female$suicide_rate_female_scaled,
+                                               state.specification = ss_us_suicide_tv_sd_female,
+                                               niter = iter,
+                                               family = "gaussian",
+                                               seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_tv_sd_female <- predict(model_bsts_us_suicide_tv_sd_female,
+                                                newdata = test_for_bsts_us_suicide_female,
+                                                niter = iter,
+                                                burn = burn,
+                                                seed = 42)
+    
+    pre_bsts_us_suicide_tv_sd_female <- pre_bsts_us_suicide_tv_sd_female$mean[(nrow(test_for_bsts_us_suicide_female)-36+1):(nrow(test_for_bsts_us_suicide_female)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_tv_sd_female <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_tv_sd_female, 
+      min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_tv_sd_female, val_us_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_us_model_2_female <- rbind(model_selection_us_model_2_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_tv_sd_female <- model_selection_us_model_2_female[which.min(model_selection_us_model_2_female$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_us_suicide_tv_sd_female <- bsts(formula = train_for_bsts_us_suicide_female$suicide_rate_female_scaled,
+                                           state.specification = ss_us_suicide_tv_sd_female,
+                                           niter = best_model_us_suicide_tv_sd_female$iterations,
+                                           family = "gaussian",
+                                           seed = 42)
+
+#components
+plot(model_bsts_us_suicide_tv_sd_female ,"comp")+
+  title("US Female Model (2)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_tv_sd_female <- predict(model_bsts_us_suicide_tv_sd_female,
+                                            newdata = test_for_bsts_us_suicide_female,
+                                            niter = best_model_us_suicide_tv_sd_female$iterations,
+                                            burn = best_model_us_suicide_tv_sd_female$burn_in,
+                                            seed = 42)
+
+pre_bsts_us_suicide_tv_sd_female <- pre_bsts_us_suicide_tv_sd_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_tv_sd_female <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_tv_sd_female, 
+  min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_female$pre_rate_model_2 <- pre_bsts_us_suicide_rate_tv_sd_female[(nrow(test_for_bsts_us_suicide_female)-24+1):nrow(test_for_bsts_us_suicide_female)]
+test_us_suicide_female$pre_num_model_2 <- (test_us_suicide_female$pre_rate_model_2 * test_us_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_female$pre_rate_model_2, test_us_suicide_female$true_rate))
+print(accuracy(test_us_suicide_female$pre_num_model_2, test_us_suicide_female$true_num))
+
+# model (3) ----------------------------------------------------------------
+#add local levels
+ss_us_suicide_tv_all_female <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_female$suicide_rate_female_scaled)
+
+#add seasonality
+ss_us_suicide_tv_all_female <- AddSeasonal(ss_us_suicide_tv_all_female, train_for_bsts_us_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+#regression
+ss_us_suicide_tv_all_female <- AddDynamicRegression(ss_us_suicide_tv_all_female,
+                                                    formula(suicide_rate_female_scaled ~                                                                      
+                                                              query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                                    
+                                                              query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                                    
+                                                              query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                                    
+                                                              query_how_to_commit_suicide_scaled +                                                                    
+                                                              query_manic_depression_scaled + query_social_welfare_scaled +                                                                    
+                                                              query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                                    
+                                                              query_suicide_hotline_scaled + query_suicide_help_scaled +                                                                    
+                                                              query_severe_depression_scaled + query_suicide_attempt_scaled +                                                                    
+                                                              query_insomnia_scaled +                                                                    
+                                                              query_headache_scaled + query_suicidal_thoughts_scaled +                                                                    
+                                                              query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                                    
+                                                              query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                                    
+                                                              query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                                    
+                                                              query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                                    
+                                                              query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                                    
+                                                              query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                                    
+                                                              query_illicit_drugs_scaled + query_social_benefits_scaled +                                                                    
+                                                              query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                                    
+                                                              query_domestic_violence_scaled + query_hypnotics_scaled +                                                                    
+                                                              query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                                    
+                                                              query_suicide_prevention_scaled + query_lawsuit_scaled +                                                                    
+                                                              query_alcohol_abstinence_scaled + query_religious_belief_scaled),                                         
+                                                    data = train_for_bsts_us_suicide_female)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_us_model_3_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_us_suicide_tv_all_female <- bsts(formula = train_for_bsts_us_suicide_female$suicide_rate_female_scaled,
+                                                state.specification = ss_us_suicide_tv_all_female,
+                                                niter = iter,
+                                                family = "gaussian",
+                                                seed = 42)
+    
+    # Make predictions
+    pre_bsts_us_suicide_tv_all_female <- predict(model_bsts_us_suicide_tv_all_female,
+                                                 newdata = test_for_bsts_us_suicide_female,
+                                                 niter = iter,
+                                                 burn = burn,
+                                                 seed = 42)
+    
+    pre_bsts_us_suicide_tv_all_female <- pre_bsts_us_suicide_tv_all_female$mean[(nrow(test_for_bsts_us_suicide_female)-36+1):(nrow(test_for_bsts_us_suicide_female)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_us_suicide_rate_tv_all_female <- scale_max_min_vector_inverse(
+      pre_bsts_us_suicide_tv_all_female, 
+      min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+      max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_us_suicide_rate_tv_all_female, val_us_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_us_model_3_female <- rbind(model_selection_us_model_3_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_tv_all_female <- model_selection_us_model_3_female[which.min(model_selection_us_model_3_female$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_us_suicide_tv_all_female <- bsts(formula = train_for_bsts_us_suicide_female$suicide_rate_female_scaled,
+                                            state.specification = ss_us_suicide_tv_all_female,
+                                            niter = best_model_us_suicide_tv_all_female$iterations,
+                                            family = "gaussian",
+                                            seed = 42)
+
+# Plot components
+plot(model_bsts_us_suicide_tv_all_female, "comp")+
+  title("US Female Model (3)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_tv_all_female <- predict(model_bsts_us_suicide_tv_all_female,
+                                             newdata = test_for_bsts_us_suicide_female,
+                                             niter = best_model_us_suicide_tv_all_female$iterations,
+                                             burn = best_model_us_suicide_tv_all_female$burn_in,
+                                             seed = 42)
+
+pre_bsts_us_suicide_tv_all_female <- pre_bsts_us_suicide_tv_all_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_tv_all_female <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_tv_all_female, 
+  min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_female$pre_rate_model_3 <- pre_bsts_us_suicide_rate_tv_all_female[(nrow(test_for_bsts_us_suicide_female)-24+1):nrow(test_for_bsts_us_suicide_female)]
+test_us_suicide_female$pre_num_model_3 <- (test_us_suicide_female$pre_rate_model_3 * test_us_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_female$pre_rate_model_3, test_us_suicide_female$true_rate))
+print(accuracy(test_us_suicide_female$pre_num_model_3, test_us_suicide_female$true_num))
+
+# model (4) ---------------------------------------------------------------
+# Add local level
+ss_us_suicide_spike_slab_female <- AddLocalLevel(state.specification=list(), train_for_bsts_us_suicide_female$suicide_rate_female_scaled)
+
+# Add seasonality
+ss_us_suicide_spike_slab_female <- AddSeasonal(ss_us_suicide_spike_slab_female, train_for_bsts_us_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+# Define the formula
+formula_us_female <- formula(suicide_rate_female_scaled ~                                                            
+                               query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                           
+                               query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                           
+                               query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                           
+                               query_how_to_commit_suicide_scaled +                                                           
+                               query_manic_depression_scaled + query_social_welfare_scaled +                                                           
+                               query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                           
+                               query_suicide_hotline_scaled + query_suicide_help_scaled +                                                           
+                               query_severe_depression_scaled + query_suicide_attempt_scaled +                                                           
+                               query_insomnia_scaled +                                                           
+                               query_headache_scaled + query_suicidal_thoughts_scaled +                                                           
+                               query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                           
+                               query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                           
+                               query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                           
+                               query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                           
+                               query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                           
+                               query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                           
+                               query_illicit_drugs_scaled + query_social_benefits_scaled +                                                           
+                               query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                           
+                               query_domestic_violence_scaled + query_hypnotics_scaled +                                                           
+                               query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                           
+                               query_suicide_prevention_scaled + query_lawsuit_scaled +                                                           
+                               query_alcohol_abstinence_scaled + query_religious_belief_scaled)
+
+# Count the number of query
+n_predictors <- ncol(train_for_bsts_us_suicide_female)-1
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+#expected model size
+pi_values <- c(0.05, 0.1, 0.15, 0.20)
+
+# Create a dataframe to store results
+model_selection_us_model_4_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    for (pi in pi_values) {
+      # Calculate burn-in period and expected model size
+      burn <- round(iter * burn_percent)
+      expected_model_size <- n_predictors * pi
+      
+      # Fit the model
+      model_bsts_us_suicide_spike_slab_female <- bsts(formula_us_female,
+                                                      data = train_for_bsts_us_suicide_female, 
+                                                      state.specification = ss_us_suicide_spike_slab_female, 
+                                                      niter = iter,
+                                                      expected.model.size = expected_model_size, 
+                                                      family = "gaussian", 
+                                                      seed = 42)
+      
+      # Make predictions
+      pre_bsts_us_suicide_spike_slab_female <- predict(model_bsts_us_suicide_spike_slab_female,
+                                                       newdata = test_for_bsts_us_suicide_female,
+                                                       niter = iter,
+                                                       burn = burn,
+                                                       seed = 42)
+      
+      pre_bsts_us_suicide_spike_slab_female <- pre_bsts_us_suicide_spike_slab_female$mean[(nrow(test_for_bsts_us_suicide_female)-36+1):(nrow(test_for_bsts_us_suicide_female)-24)]
+      
+      # Inverse scale transformation
+      pre_bsts_us_suicide_rate_spike_slab_female <- scale_max_min_vector_inverse(
+        pre_bsts_us_suicide_spike_slab_female, 
+        min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+        max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics
+      accuracy_results <- accuracy(pre_bsts_us_suicide_rate_spike_slab_female, val_us_suicide_female)
+      
+      # Add results to the dataframe
+      model_selection_us_model_4_female <- rbind(model_selection_us_model_4_female, 
+                                                 data.frame(iterations = iter,
+                                                            burn_in_percent = burn_percent,
+                                                            pi = pi,
+                                                            expected_model_size = expected_model_size,
+                                                            burn_in = burn,
+                                                            MAPE = accuracy_results[5],
+                                                            RMSE = accuracy_results[2],
+                                                            MAE = accuracy_results[3]))
+    }
+  }
+}
+
+# Find the best model based on MAPE
+best_model_us_suicide_spike_slab_female <- model_selection_us_model_4_female[which.min(model_selection_us_model_4_female$MAPE), ]
+
+# Calculate final model with best parameters
+final_model_bsts_us_suicide_spike_slab_female <- bsts(formula_us_female,
+                                                      data = train_for_bsts_us_suicide_female, 
+                                                      state.specification = ss_us_suicide_spike_slab_female, 
+                                                      niter = best_model_us_suicide_spike_slab_female$iterations,
+                                                      expected.model.size = best_model_us_suicide_spike_slab_female$expected_model_size, 
+                                                      family = "gaussian", 
+                                                      seed = 42)
+
+# Plot components
+plot(final_model_bsts_us_suicide_spike_slab_female, "comp")+
+  title("US Female Model (4)")
+
+# Predict suicide rate for test set
+pre_bsts_us_suicide_spike_slab_female <- predict(final_model_bsts_us_suicide_spike_slab_female,
+                                                 newdata = test_for_bsts_us_suicide_female,
+                                                 niter = best_model_us_suicide_spike_slab_female$iterations,
+                                                 burn = best_model_us_suicide_spike_slab_female$burn_in,
+                                                 seed = 42)
+
+pre_bsts_us_suicide_spike_slab_female <- pre_bsts_us_suicide_spike_slab_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_us_suicide_rate_spike_slab_female <- scale_max_min_vector_inverse(
+  pre_bsts_us_suicide_spike_slab_female, 
+  min(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"]),
+  max(df_main_us$suicide_rate_female[df_main_us$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_us_suicide_female$pre_rate_model_4 <- pre_bsts_us_suicide_rate_spike_slab_female[(nrow(test_for_bsts_us_suicide_female)-24+1):nrow(test_for_bsts_us_suicide_female)]
+test_us_suicide_female$pre_num_model_4 <- (test_us_suicide_female$pre_rate_model_4 * test_us_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_us_suicide_female$pre_rate_model_4, test_us_suicide_female$true_rate))
+print(accuracy(test_us_suicide_female$pre_num_model_4, test_us_suicide_female$true_num))
+
 
 # Model selection (JP) ----------------------------------------------------
 # model (1) ----------------------------------------------------------------
@@ -1106,7 +2115,874 @@ test_jp_suicide$pre_num_model_4 <- (test_jp_suicide$pre_rate_model_4 * test_jp_s
 print(accuracy(test_jp_suicide$pre_rate_model_4,test_jp_suicide$true_rate))
 print(accuracy(test_jp_suicide$pre_num_model_4,test_jp_suicide$true_num))
 
+# Model selection (JP Male) ----------------------------------------------------
+# model (1) ----------------------------------------------------------------
+#add local level
+ss_jp_suicide_trend_seas_male <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_male$suicide_rate_male_scaled)
 
+#add seasonality
+ss_jp_suicide_trend_seas_male <- AddSeasonal(ss_jp_suicide_trend_seas_male, train_for_bsts_jp_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_1_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_trend_seas_male <- bsts(train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                                  state.specification = ss_jp_suicide_trend_seas_male,
+                                                  niter = iter,
+                                                  family = "gaussian",
+                                                  seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_trend_seas_male <- predict(model_bsts_jp_suicide_trend_seas_male, 
+                                                   horizon = 12,
+                                                   niter = iter,
+                                                   burn = burn,
+                                                   seed = 42)
+    
+    pre_bsts_jp_suicide_trend_seas_male <- pre_bsts_jp_suicide_trend_seas_male$mean
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_trend_seas_male <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_trend_seas_male, 
+      min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_trend_seas_male, val_jp_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_1_male <- rbind(model_selection_jp_model_1_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+
+# Find the best model based on MAPE
+best_model_jp_suicide_trend_seas_male <- model_selection_jp_model_1_male[which.min(model_selection_jp_model_1_male$MAPE), ]
+
+#calculation final model
+model_bsts_jp_suicide_trend_seas_male <- bsts(train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                              state.specification = ss_jp_suicide_trend_seas_male,
+                                              niter = best_model_jp_suicide_trend_seas_male$iterations,
+                                              family = "gaussian",
+                                              seed = 42)
+
+#components
+plot(model_bsts_jp_suicide_trend_seas_male,"comp")+
+  title("Japan Male Model (1)")
+
+#predict suicide rate
+pre_bsts_jp_suicide_trend_seas_male <- predict(model_bsts_jp_suicide_trend_seas_male, 
+                                               horizon = 36,
+                                               niter = best_model_jp_suicide_trend_seas_male$iterations,
+                                               burn = best_model_jp_suicide_trend_seas_male$burn_in,
+                                               seed = 42)
+pre_bsts_jp_suicide_trend_seas_male <- pre_bsts_jp_suicide_trend_seas_male$mean
+pre_bsts_jp_suicide_rate_trend_seas_male <- scale_max_min_vector_inverse(pre_bsts_jp_suicide_trend_seas_male, 
+                                                                         min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]), 
+                                                                         max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]))
+
+#predict suicide rate and number for test set
+test_jp_suicide_male$pre_rate_model_1  <- pre_bsts_jp_suicide_rate_trend_seas_male[13:length(pre_bsts_jp_suicide_rate_trend_seas_male)]
+test_jp_suicide_male$pre_num_model_1 <- (test_jp_suicide_male$pre_rate_model_1*test_jp_suicide_male$pop)/100000
+
+#confirm accuracy for test set
+#rate
+print(accuracy(test_jp_suicide_male$pre_rate_model_1,test_jp_suicide_male$true_rate))
+#number
+print(accuracy(test_jp_suicide_male$pre_num_model_1,test_jp_suicide_male$true_num))
+
+# model (2) ----------------------------------------------------------------
+#add local level
+ss_jp_suicide_tv_sd_male <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_male$suicide_rate_male_scaled)
+
+#add seasonality
+ss_jp_suicide_tv_sd_male <- AddSeasonal(ss_jp_suicide_tv_sd_male, train_for_bsts_jp_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+#add regression
+ss_jp_suicide_tv_sd_male <- AddDynamicRegression(ss_jp_suicide_tv_sd_male,
+                                                 formula(suicide_rate_male_scaled ~ 
+                                                           query_suicide_scaled + query_depression_scaled),
+                                                 data = train_for_bsts_jp_suicide_male)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_2_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_tv_sd_male <- bsts(formula = train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                             state.specification = ss_jp_suicide_tv_sd_male,
+                                             niter = iter,
+                                             family = "gaussian",
+                                             seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_tv_sd_male <- predict(model_bsts_jp_suicide_tv_sd_male,
+                                              newdata = test_for_bsts_jp_suicide_male,
+                                              niter = iter,
+                                              burn = burn,
+                                              seed = 42)
+    
+    pre_bsts_jp_suicide_tv_sd_male <- pre_bsts_jp_suicide_tv_sd_male$mean[(nrow(test_for_bsts_jp_suicide_male)-36+1):(nrow(test_for_bsts_jp_suicide_male)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_tv_sd_male <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_tv_sd_male, 
+      min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_tv_sd_male, val_jp_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_2_male <- rbind(model_selection_jp_model_2_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_tv_sd_male <- model_selection_jp_model_2_male[which.min(model_selection_jp_model_2_male$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_jp_suicide_tv_sd_male <- bsts(formula = train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                         state.specification = ss_jp_suicide_tv_sd_male,
+                                         niter = best_model_jp_suicide_tv_sd_male$iterations,
+                                         family = "gaussian",
+                                         seed = 42)
+
+#components
+plot(model_bsts_jp_suicide_tv_sd_male ,"comp")+
+  title("Japan Male Model (2)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_tv_sd_male <- predict(model_bsts_jp_suicide_tv_sd_male,
+                                          newdata = test_for_bsts_jp_suicide_male,
+                                          niter = best_model_jp_suicide_tv_sd_male$iterations,
+                                          burn = best_model_jp_suicide_tv_sd_male$burn_in,
+                                          seed = 42)
+
+pre_bsts_jp_suicide_tv_sd_male <- pre_bsts_jp_suicide_tv_sd_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_tv_sd_male <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_tv_sd_male, 
+  min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_male$pre_rate_model_2 <- pre_bsts_jp_suicide_rate_tv_sd_male[(nrow(test_for_bsts_jp_suicide_male)-24+1):nrow(test_for_bsts_jp_suicide_male)]
+test_jp_suicide_male$pre_num_model_2 <- (test_jp_suicide_male$pre_rate_model_2 * test_jp_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_male$pre_rate_model_2, test_jp_suicide_male$true_rate))
+print(accuracy(test_jp_suicide_male$pre_num_model_2, test_jp_suicide_male$true_num))
+
+# model (3) ---------------------------------------------------------------
+#add local levels
+ss_jp_suicide_tv_all_male <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_male$suicide_rate_male_scaled)
+
+#add seasonality
+ss_jp_suicide_tv_all_male <- AddSeasonal(ss_jp_suicide_tv_all_male, train_for_bsts_jp_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+#regression
+ss_jp_suicide_tv_all_male <- AddDynamicRegression(ss_jp_suicide_tv_all_male,
+                                                  formula(suicide_rate_male_scaled ~ query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +
+                                                            query_suicide_methods_scaled + query_abuse_scaled + query_loneliness_scaled + query_divorce_scaled +
+                                                            query_unemployment_scaled + query_how_to_commit_suicide_scaled + query_manic_depression_scaled  +
+                                                            query_social_welfare_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +
+                                                            query_suicide_hotline_scaled + query_suicide_help_scaled + query_suicide_attempt_scaled +
+                                                            query_insomnia_scaled + query_headache_scaled + query_allergy_scaled + query_suicidal_thoughts_scaled +
+                                                            query_major_depression_scaled + query_schizophrenia_scaled + query_stress_scaled +
+                                                            query_anxiety_disorder_scaled + query_marriage_scaled + query_bipolar_disorder_scaled +
+                                                            query_cancer_scaled + query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +
+                                                            query_relationship_breakup_scaled + query_teen_suicide_scaled + query_job_scaled +
+                                                            query_drunkenness_scaled + query_hanging_scaled + query_illicit_drugs_scaled +
+                                                            query_hydrogen_sulfide_scaled + query_stock_market_scaled + query_domestic_violence_scaled +
+                                                            query_hypnotics_scaled + query_charcoal_burning_scaled + query_chronic_illness_scaled +
+                                                            query_suicide_prevention_scaled + query_lawsuit_scaled + query_alcohol_abstinence_scaled +
+                                                            query_religious_belief_scaled),                                         
+                                                  data = train_for_bsts_jp_suicide_male)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_3_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_tv_all_male <- bsts(formula = train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                              state.specification = ss_jp_suicide_tv_all_male,
+                                              niter = iter,
+                                              family = "gaussian",
+                                              seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_tv_all_male <- predict(model_bsts_jp_suicide_tv_all_male,
+                                               newdata = test_for_bsts_jp_suicide_male,
+                                               niter = iter,
+                                               burn = burn,
+                                               seed = 42)
+    
+    pre_bsts_jp_suicide_tv_all_male <- pre_bsts_jp_suicide_tv_all_male$mean[(nrow(test_for_bsts_jp_suicide_male)-36+1):(nrow(test_for_bsts_jp_suicide_male)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_tv_all_male <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_tv_all_male, 
+      min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_tv_all_male, val_jp_suicide_male)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_3_male <- rbind(model_selection_jp_model_3_male, 
+                                             data.frame(iterations = iter,
+                                                        burn_in_percent = burn_percent,
+                                                        burn_in = burn,
+                                                        MAPE = accuracy_results[5],
+                                                        RMSE = accuracy_results[2],
+                                                        MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_tv_all_male <- model_selection_jp_model_3_male[which.min(model_selection_jp_model_3_male$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_jp_suicide_tv_all_male <- bsts(formula = train_for_bsts_jp_suicide_male$suicide_rate_male_scaled,
+                                          state.specification = ss_jp_suicide_tv_all_male,
+                                          niter = best_model_jp_suicide_tv_all_male$iterations,
+                                          family = "gaussian",
+                                          seed = 42)
+
+# Plot components
+plot(model_bsts_jp_suicide_tv_all_male, "comp")+
+  title("Japan Male Model (3)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_tv_all_male <- predict(model_bsts_jp_suicide_tv_all_male,
+                                           newdata = test_for_bsts_jp_suicide_male,
+                                           niter = best_model_jp_suicide_tv_all_male$iterations,
+                                           burn = best_model_jp_suicide_tv_all_male$burn_in,
+                                           seed = 42)
+
+pre_bsts_jp_suicide_tv_all_male <- pre_bsts_jp_suicide_tv_all_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_tv_all_male <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_tv_all_male, 
+  min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_male$pre_rate_model_3 <- pre_bsts_jp_suicide_rate_tv_all_male[(nrow(test_for_bsts_jp_suicide_male)-24+1):nrow(test_for_bsts_jp_suicide_male)]
+test_jp_suicide_male$pre_num_model_3 <- (test_jp_suicide_male$pre_rate_model_3 * test_jp_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_male$pre_rate_model_3, test_jp_suicide_male$true_rate))
+print(accuracy(test_jp_suicide_male$pre_num_model_3, test_jp_suicide_male$true_num))
+
+# model (4) ---------------------------------------------------------------
+# Add local level
+ss_jp_suicide_spike_slab_male <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_male$suicide_rate_male_scaled)
+
+# Add seasonality
+ss_jp_suicide_spike_slab_male <- AddSeasonal(ss_jp_suicide_spike_slab_male, train_for_bsts_jp_suicide_male$suicide_rate_male_scaled, nseasons=12)
+
+# Define the formula
+formula_jp_male <- formula(suicide_rate_male_scaled ~ query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +
+                             query_suicide_methods_scaled + query_abuse_scaled + query_loneliness_scaled + query_divorce_scaled +
+                             query_unemployment_scaled + query_how_to_commit_suicide_scaled + query_manic_depression_scaled+
+                             query_social_welfare_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +
+                             query_suicide_hotline_scaled + query_suicide_help_scaled + query_suicide_attempt_scaled +
+                             query_insomnia_scaled + query_headache_scaled + query_allergy_scaled + query_suicidal_thoughts_scaled +
+                             query_major_depression_scaled + query_schizophrenia_scaled + query_stress_scaled +
+                             query_anxiety_disorder_scaled + query_marriage_scaled + query_bipolar_disorder_scaled +
+                             query_cancer_scaled + query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +
+                             query_relationship_breakup_scaled + query_teen_suicide_scaled + query_job_scaled +
+                             query_drunkenness_scaled + query_hanging_scaled + query_illicit_drugs_scaled +
+                             query_hydrogen_sulfide_scaled + query_stock_market_scaled + query_domestic_violence_scaled +
+                             query_hypnotics_scaled + query_charcoal_burning_scaled + query_chronic_illness_scaled +
+                             query_suicide_prevention_scaled + query_lawsuit_scaled + query_alcohol_abstinence_scaled +
+                             query_religious_belief_scaled)
+
+# Count the number of query
+n_predictors <- ncol(train_for_bsts_jp_suicide_male)-1
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+#expected model size
+pi_values <- c(0.05, 0.1, 0.15, 0.20)
+
+# Create a dataframe to store results
+model_selection_jp_model_4_male <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    for (pi in pi_values) {
+      # Calculate burn-in period and expected model size
+      burn <- round(iter * burn_percent)
+      expected_model_size <- n_predictors * pi
+      
+      # Fit the model
+      model_bsts_jp_suicide_spike_slab_male <- bsts(formula_jp_male,
+                                                    data = train_for_bsts_jp_suicide_male, 
+                                                    state.specification = ss_jp_suicide_spike_slab_male, 
+                                                    niter = iter,
+                                                    expected.model.size = expected_model_size, 
+                                                    family = "gaussian", 
+                                                    seed = 42)
+      
+      # Make predictions
+      pre_bsts_jp_suicide_spike_slab_male <- predict(model_bsts_jp_suicide_spike_slab_male,
+                                                     newdata = test_for_bsts_jp_suicide_male,
+                                                     niter = iter,
+                                                     burn = burn,
+                                                     seed = 42)
+      
+      pre_bsts_jp_suicide_spike_slab_male <- pre_bsts_jp_suicide_spike_slab_male$mean[(nrow(test_for_bsts_jp_suicide_male)-36+1):(nrow(test_for_bsts_jp_suicide_male)-24)]
+      
+      # Inverse scale transformation
+      pre_bsts_jp_suicide_rate_spike_slab_male <- scale_max_min_vector_inverse(
+        pre_bsts_jp_suicide_spike_slab_male, 
+        min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+        max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics
+      accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_spike_slab_male, val_jp_suicide_male)
+      
+      # Add results to the dataframe
+      model_selection_jp_model_4_male <- rbind(model_selection_jp_model_4_male, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          pi = pi,
+                                                          expected_model_size = expected_model_size,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+    }
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_spike_slab_male <- model_selection_jp_model_4_male[which.min(model_selection_jp_model_4_male$MAPE), ]
+
+# Calculate final model with best parameters
+final_model_bsts_jp_suicide_spike_slab_male <- bsts(formula_jp_male,
+                                                    data = train_for_bsts_jp_suicide_male, 
+                                                    state.specification = ss_jp_suicide_spike_slab_male, 
+                                                    niter = best_model_jp_suicide_spike_slab_male$iterations,
+                                                    expected.model.size = best_model_jp_suicide_spike_slab_male$expected_model_size, 
+                                                    family = "gaussian", 
+                                                    seed = 42)
+
+# Plot components
+plot(final_model_bsts_jp_suicide_spike_slab_male, "comp")+
+  title("Japan Male Model (4)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_spike_slab_male <- predict(final_model_bsts_jp_suicide_spike_slab_male,
+                                               newdata = test_for_bsts_jp_suicide_male,
+                                               niter = best_model_jp_suicide_spike_slab_male$iterations,
+                                               burn = best_model_jp_suicide_spike_slab_male$burn_in,
+                                               seed = 42)
+
+pre_bsts_jp_suicide_spike_slab_male <- pre_bsts_jp_suicide_spike_slab_male$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_spike_slab_male <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_spike_slab_male, 
+  min(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_male[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_male$pre_rate_model_4 <- pre_bsts_jp_suicide_rate_spike_slab_male[(nrow(test_for_bsts_jp_suicide_male)-24+1):nrow(test_for_bsts_jp_suicide_male)]
+test_jp_suicide_male$pre_num_model_4 <- (test_jp_suicide_male$pre_rate_model_4 * test_jp_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_male$pre_rate_model_4, test_jp_suicide_male$true_rate))
+print(accuracy(test_jp_suicide_male$pre_num_model_4, test_jp_suicide_male$true_num))
+
+# Model selection (JP Female) ----------------------------------------------------
+# model (1) ----------------------------------------------------------------
+#add local level
+ss_jp_suicide_trend_seas_female <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_female$suicide_rate_female_scaled)
+
+#add seasonality
+ss_jp_suicide_trend_seas_female <- AddSeasonal(ss_jp_suicide_trend_seas_female, train_for_bsts_jp_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_1_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_trend_seas_female <- bsts(train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                                    state.specification = ss_jp_suicide_trend_seas_female,
+                                                    niter = iter,
+                                                    family = "gaussian",
+                                                    seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_trend_seas_female <- predict(model_bsts_jp_suicide_trend_seas_female, 
+                                                     horizon = 12,
+                                                     niter = iter,
+                                                     burn = burn,
+                                                     seed = 42)
+    
+    pre_bsts_jp_suicide_trend_seas_female <- pre_bsts_jp_suicide_trend_seas_female$mean
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_trend_seas_female <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_trend_seas_female, 
+      min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_trend_seas_female, val_jp_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_1_female <- rbind(model_selection_jp_model_1_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_trend_seas_female <- model_selection_jp_model_1_female[which.min(model_selection_jp_model_1_female$MAPE), ]
+
+#calculation final model
+model_bsts_jp_suicide_trend_seas_female <- bsts(train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                                state.specification = ss_jp_suicide_trend_seas_female,
+                                                niter = best_model_jp_suicide_trend_seas_female$iterations,
+                                                family = "gaussian",
+                                                seed = 42)
+
+#components
+plot(model_bsts_jp_suicide_trend_seas_female,"comp")+
+  title("Japan Female Model (1)")
+
+#predict suicide rate
+pre_bsts_jp_suicide_trend_seas_female <- predict(model_bsts_jp_suicide_trend_seas_female, 
+                                                 horizon = 36,
+                                                 niter = best_model_jp_suicide_trend_seas_female$iterations,
+                                                 burn = best_model_jp_suicide_trend_seas_female$burn_in,
+                                                 seed = 42)
+pre_bsts_jp_suicide_trend_seas_female <- pre_bsts_jp_suicide_trend_seas_female$mean
+pre_bsts_jp_suicide_rate_trend_seas_female <- scale_max_min_vector_inverse(pre_bsts_jp_suicide_trend_seas_female, 
+                                                                           min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]), 
+                                                                           max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]))
+
+#predict suicide rate and number for test set
+test_jp_suicide_female$pre_rate_model_1  <- pre_bsts_jp_suicide_rate_trend_seas_female[13:length(pre_bsts_jp_suicide_rate_trend_seas_female)]
+test_jp_suicide_female$pre_num_model_1 <- (test_jp_suicide_female$pre_rate_model_1*test_jp_suicide_female$pop)/100000
+
+#confirm accuracy for test set
+#rate
+print(accuracy(test_jp_suicide_female$pre_rate_model_1,test_jp_suicide_female$true_rate))
+#number
+print(accuracy(test_jp_suicide_female$pre_num_model_1,test_jp_suicide_female$true_num))
+
+# model (2) ----------------------------------------------------------------
+#add local level
+ss_jp_suicide_tv_sd_female <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_female$suicide_rate_female_scaled)
+
+#add seasonality
+ss_jp_suicide_tv_sd_female <- AddSeasonal(ss_jp_suicide_tv_sd_female, train_for_bsts_jp_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+#add regression
+ss_jp_suicide_tv_sd_female <- AddDynamicRegression(ss_jp_suicide_tv_sd_female,
+                                                   formula(suicide_rate_female_scaled ~ 
+                                                             query_suicide_scaled + query_depression_scaled),
+                                                   data = train_for_bsts_jp_suicide_female)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1,0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_2_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_tv_sd_female <- bsts(formula = train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                               state.specification = ss_jp_suicide_tv_sd_female,
+                                               niter = iter,
+                                               family = "gaussian",
+                                               seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_tv_sd_female <- predict(model_bsts_jp_suicide_tv_sd_female,
+                                                newdata = test_for_bsts_jp_suicide_female,
+                                                niter = iter,
+                                                burn = burn,
+                                                seed = 42)
+    
+    pre_bsts_jp_suicide_tv_sd_female <- pre_bsts_jp_suicide_tv_sd_female$mean[(nrow(test_for_bsts_jp_suicide_female)-36+1):(nrow(test_for_bsts_jp_suicide_female)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_tv_sd_female <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_tv_sd_female, 
+      min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_tv_sd_female, val_jp_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_2_female <- rbind(model_selection_jp_model_2_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_tv_sd_female <- model_selection_jp_model_2_female[which.min(model_selection_jp_model_2_female$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_jp_suicide_tv_sd_female <- bsts(formula = train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                           state.specification = ss_jp_suicide_tv_sd_female,
+                                           niter = best_model_jp_suicide_tv_sd_female$iterations,
+                                           family = "gaussian",
+                                           seed = 42)
+
+#components
+plot(model_bsts_jp_suicide_tv_sd_female ,"comp")+
+  title("Japan Female Model (2)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_tv_sd_female <- predict(model_bsts_jp_suicide_tv_sd_female,
+                                            newdata = test_for_bsts_jp_suicide_female,
+                                            niter = best_model_jp_suicide_tv_sd_female$iterations,
+                                            burn = best_model_jp_suicide_tv_sd_female$burn_in,
+                                            seed = 42)
+
+pre_bsts_jp_suicide_tv_sd_female <- pre_bsts_jp_suicide_tv_sd_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_tv_sd_female <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_tv_sd_female, 
+  min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_female$pre_rate_model_2 <- pre_bsts_jp_suicide_rate_tv_sd_female[(nrow(test_for_bsts_jp_suicide_female)-24+1):nrow(test_for_bsts_jp_suicide_female)]
+test_jp_suicide_female$pre_num_model_2 <- (test_jp_suicide_female$pre_rate_model_2 * test_jp_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_female$pre_rate_model_2, test_jp_suicide_female$true_rate))
+print(accuracy(test_jp_suicide_female$pre_num_model_2, test_jp_suicide_female$true_num))
+
+# model (3) ---------------------------------------------------------------
+#add local levels
+ss_jp_suicide_tv_all_female <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_female$suicide_rate_female_scaled)
+
+#add seasonality
+ss_jp_suicide_tv_all_female <- AddSeasonal(ss_jp_suicide_tv_all_female, train_for_bsts_jp_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+#regression
+ss_jp_suicide_tv_all_female <- AddDynamicRegression(ss_jp_suicide_tv_all_female,
+                                                    formula(suicide_rate_female_scaled ~ query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +
+                                                              query_suicide_methods_scaled + query_abuse_scaled + query_loneliness_scaled + query_divorce_scaled +
+                                                              query_unemployment_scaled + query_how_to_commit_suicide_scaled + query_manic_depression_scaled  +
+                                                              query_social_welfare_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +
+                                                              query_suicide_hotline_scaled + query_suicide_help_scaled + query_suicide_attempt_scaled +
+                                                              query_insomnia_scaled + query_headache_scaled + query_allergy_scaled + query_suicidal_thoughts_scaled +
+                                                              query_major_depression_scaled + query_schizophrenia_scaled + query_stress_scaled +
+                                                              query_anxiety_disorder_scaled + query_marriage_scaled + query_bipolar_disorder_scaled +
+                                                              query_cancer_scaled + query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +
+                                                              query_relationship_breakup_scaled + query_teen_suicide_scaled + query_job_scaled +
+                                                              query_drunkenness_scaled + query_hanging_scaled + query_illicit_drugs_scaled +
+                                                              query_hydrogen_sulfide_scaled + query_stock_market_scaled + query_domestic_violence_scaled +
+                                                              query_hypnotics_scaled + query_charcoal_burning_scaled + query_chronic_illness_scaled +
+                                                              query_suicide_prevention_scaled + query_lawsuit_scaled + query_alcohol_abstinence_scaled +
+                                                              query_religious_belief_scaled),                                         
+                                                    data = train_for_bsts_jp_suicide_female)
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+
+# Create a dataframe to store results
+model_selection_jp_model_3_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    # Calculate burn-in period
+    burn <- round(iter * burn_percent)
+    
+    # Fit the model
+    model_bsts_jp_suicide_tv_all_female <- bsts(formula = train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                                state.specification = ss_jp_suicide_tv_all_female,
+                                                niter = iter,
+                                                family = "gaussian",
+                                                seed = 42)
+    
+    # Make predictions
+    pre_bsts_jp_suicide_tv_all_female <- predict(model_bsts_jp_suicide_tv_all_female,
+                                                 newdata = test_for_bsts_jp_suicide_female,
+                                                 niter = iter,
+                                                 burn = burn,
+                                                 seed = 42)
+    
+    pre_bsts_jp_suicide_tv_all_female <- pre_bsts_jp_suicide_tv_all_female$mean[(nrow(test_for_bsts_jp_suicide_female)-36+1):(nrow(test_for_bsts_jp_suicide_female)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_jp_suicide_rate_tv_all_female <- scale_max_min_vector_inverse(
+      pre_bsts_jp_suicide_tv_all_female, 
+      min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+      max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_tv_all_female, val_jp_suicide_female)
+    
+    # Add results to the dataframe
+    model_selection_jp_model_3_female <- rbind(model_selection_jp_model_3_female, 
+                                               data.frame(iterations = iter,
+                                                          burn_in_percent = burn_percent,
+                                                          burn_in = burn,
+                                                          MAPE = accuracy_results[5],
+                                                          RMSE = accuracy_results[2],
+                                                          MAE = accuracy_results[3]))
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_tv_all_female <- model_selection_jp_model_3_female[which.min(model_selection_jp_model_3_female$MAPE), ]
+
+# Calculate final model with best parameters
+model_bsts_jp_suicide_tv_all_female <- bsts(formula = train_for_bsts_jp_suicide_female$suicide_rate_female_scaled,
+                                            state.specification = ss_jp_suicide_tv_all_female,
+                                            niter = best_model_jp_suicide_tv_all_female$iterations,
+                                            family = "gaussian",
+                                            seed = 42)
+
+# Plot components
+plot(model_bsts_jp_suicide_tv_all_female, "comp")+
+  title("Japan Female Model (3)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_tv_all_female <- predict(model_bsts_jp_suicide_tv_all_female,
+                                             newdata = test_for_bsts_jp_suicide_female,
+                                             niter = best_model_jp_suicide_tv_all_female$iterations,
+                                             burn = best_model_jp_suicide_tv_all_female$burn_in,
+                                             seed = 42)
+
+pre_bsts_jp_suicide_tv_all_female <- pre_bsts_jp_suicide_tv_all_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_tv_all_female <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_tv_all_female, 
+  min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_female$pre_rate_model_3 <- pre_bsts_jp_suicide_rate_tv_all_female[(nrow(test_for_bsts_jp_suicide_female)-24+1):nrow(test_for_bsts_jp_suicide_female)]
+test_jp_suicide_female$pre_num_model_3 <- (test_jp_suicide_female$pre_rate_model_3 * test_jp_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_female$pre_rate_model_3, test_jp_suicide_female$true_rate))
+print(accuracy(test_jp_suicide_female$pre_num_model_3, test_jp_suicide_female$true_num))
+
+# model (4) ---------------------------------------------------------------
+# Add local level
+ss_jp_suicide_spike_slab_female <- AddLocalLevel(state.specification=list(), train_for_bsts_jp_suicide_female$suicide_rate_female_scaled)
+
+# Add seasonality
+ss_jp_suicide_spike_slab_female <- AddSeasonal(ss_jp_suicide_spike_slab_female, train_for_bsts_jp_suicide_female$suicide_rate_female_scaled, nseasons=12)
+
+# Define the formula
+formula_jp_female <- formula(suicide_rate_female_scaled ~ query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +
+                               query_suicide_methods_scaled + query_abuse_scaled + query_loneliness_scaled + query_divorce_scaled +
+                               query_unemployment_scaled + query_how_to_commit_suicide_scaled + query_manic_depression_scaled+
+                               query_social_welfare_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +
+                               query_suicide_hotline_scaled + query_suicide_help_scaled + query_suicide_attempt_scaled +
+                               query_insomnia_scaled + query_headache_scaled + query_allergy_scaled + query_suicidal_thoughts_scaled +
+                               query_major_depression_scaled + query_schizophrenia_scaled + query_stress_scaled +
+                               query_anxiety_disorder_scaled + query_marriage_scaled + query_bipolar_disorder_scaled +
+                               query_cancer_scaled + query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +
+                               query_relationship_breakup_scaled + query_teen_suicide_scaled + query_job_scaled +
+                               query_drunkenness_scaled + query_hanging_scaled + query_illicit_drugs_scaled +
+                               query_hydrogen_sulfide_scaled + query_stock_market_scaled + query_domestic_violence_scaled +
+                               query_hypnotics_scaled + query_charcoal_burning_scaled + query_chronic_illness_scaled +
+                               query_suicide_prevention_scaled + query_lawsuit_scaled + query_alcohol_abstinence_scaled +
+                               query_religious_belief_scaled)
+
+# Count the number of query
+n_predictors <- ncol(train_for_bsts_jp_suicide_female)-1
+
+# Define grid search parameters
+iterations <- c(2000,4000,8000,16000)
+burn_in_percentages <- c(0.1, 0.20,0.30,0.40)
+#expected model size
+pi_values <- c(0.05, 0.1, 0.15, 0.20)
+
+# Create a dataframe to store results
+model_selection_jp_model_4_female <- data.frame()
+
+# Perform grid search
+for (iter in iterations) {
+  for (burn_percent in burn_in_percentages) {
+    for (pi in pi_values) {
+      # Calculate burn-in period and expected model size
+      burn <- round(iter * burn_percent)
+      expected_model_size <- n_predictors * pi
+      
+      # Fit the model
+      model_bsts_jp_suicide_spike_slab_female <- bsts(formula_jp_female,
+                                                      data = train_for_bsts_jp_suicide_female, 
+                                                      state.specification = ss_jp_suicide_spike_slab_female, 
+                                                      niter = iter,
+                                                      expected.model.size = expected_model_size, 
+                                                      family = "gaussian", 
+                                                      seed = 42)
+      
+      # Make predictions
+      pre_bsts_jp_suicide_spike_slab_female <- predict(model_bsts_jp_suicide_spike_slab_female,
+                                                       newdata = test_for_bsts_jp_suicide_female,
+                                                       niter = iter,
+                                                       burn = burn,
+                                                       seed = 42)
+      
+      pre_bsts_jp_suicide_spike_slab_female <- pre_bsts_jp_suicide_spike_slab_female$mean[(nrow(test_for_bsts_jp_suicide_female)-36+1):(nrow(test_for_bsts_jp_suicide_female)-24)]
+      
+      # Inverse scale transformation
+      pre_bsts_jp_suicide_rate_spike_slab_female <- scale_max_min_vector_inverse(
+        pre_bsts_jp_suicide_spike_slab_female, 
+        min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+        max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics
+      accuracy_results <- accuracy(pre_bsts_jp_suicide_rate_spike_slab_female, val_jp_suicide_female)
+      
+      # Add results to the dataframe
+      model_selection_jp_model_4_female <- rbind(model_selection_jp_model_4_female, 
+                                                 data.frame(iterations = iter,
+                                                            burn_in_percent = burn_percent,
+                                                            pi = pi,
+                                                            expected_model_size = expected_model_size,
+                                                            burn_in = burn,
+                                                            MAPE = accuracy_results[5],
+                                                            RMSE = accuracy_results[2],
+                                                            MAE = accuracy_results[3]))
+    }
+  }
+}
+
+# Find the best model based on MAPE
+best_model_jp_suicide_spike_slab_female <- model_selection_jp_model_4_female[which.min(model_selection_jp_model_4_female$MAPE), ]
+
+# Calculate final model with best parameters
+final_model_bsts_jp_suicide_spike_slab_female <- bsts(formula_jp_female,
+                                                      data = train_for_bsts_jp_suicide_female, 
+                                                      state.specification = ss_jp_suicide_spike_slab_female, 
+                                                      niter = best_model_jp_suicide_spike_slab_female$iterations,
+                                                      expected.model.size = best_model_jp_suicide_spike_slab_female$expected_model_size, 
+                                                      family = "gaussian", 
+                                                      seed = 42)
+
+# Plot components
+plot(final_model_bsts_jp_suicide_spike_slab_female, "comp")+
+  title("Japan Female Model (4)")
+
+# Predict suicide rate for test set
+pre_bsts_jp_suicide_spike_slab_female <- predict(final_model_bsts_jp_suicide_spike_slab_female,
+                                                 newdata = test_for_bsts_jp_suicide_female,
+                                                 niter = best_model_jp_suicide_spike_slab_female$iterations,
+                                                 burn = best_model_jp_suicide_spike_slab_female$burn_in,
+                                                 seed = 42)
+
+pre_bsts_jp_suicide_spike_slab_female <- pre_bsts_jp_suicide_spike_slab_female$mean
+
+# Inverse scale transformation for entire prediction
+pre_bsts_jp_suicide_rate_spike_slab_female <- scale_max_min_vector_inverse(
+  pre_bsts_jp_suicide_spike_slab_female, 
+  min(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"]),
+  max(df_main_jp$suicide_rate_female[df_main_jp$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_jp_suicide_female$pre_rate_model_4 <- pre_bsts_jp_suicide_rate_spike_slab_female[(nrow(test_for_bsts_jp_suicide_female)-24+1):nrow(test_for_bsts_jp_suicide_female)]
+test_jp_suicide_female$pre_num_model_4 <- (test_jp_suicide_female$pre_rate_model_4 * test_jp_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_jp_suicide_female$pre_rate_model_4, test_jp_suicide_female$true_rate))
+print(accuracy(test_jp_suicide_female$pre_num_model_4, test_jp_suicide_female$true_num))
 
 # model vilification (US) -------------------------------------------------
 #sumary bsts
@@ -1162,12 +3038,14 @@ accuracy(test_us_suicide$pre_num_model_2,test_us_suicide$true_num)
 accuracy(test_us_suicide$pre_num_model_3,test_us_suicide$true_num)
 accuracy(test_us_suicide$pre_num_model_4,test_us_suicide$true_num)
 
+
 #cumulative AE for test
 #calculate AE
 test_us_suicide$abs_error_model_1 <- abs(test_us_suicide$true_num - test_us_suicide$pre_num_model_1)
 test_us_suicide$abs_error_model_2 <- abs(test_us_suicide$true_num - test_us_suicide$pre_num_model_2)
 test_us_suicide$abs_error_model_3 <- abs(test_us_suicide$true_num - test_us_suicide$pre_num_model_3)
 test_us_suicide$abs_error_model_4 <- abs(test_us_suicide$true_num - test_us_suicide$pre_num_model_4)
+
 
 #calculate comulative AE
 test_us_suicide$cumulative_abs_error_model_1 <- cumsum(test_us_suicide$abs_error_model_1)
@@ -1179,9 +3057,9 @@ test_us_suicide$cumulative_abs_error_model_4 <- cumsum(test_us_suicide$abs_error
 p_pre_accu_us <- ggplot(test_us_suicide, aes(x = term)) +
   geom_line(aes(y = true_num, color = "TRUE")) +
   geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
-  geom_line(aes(y = pre_num_model_2, color = "model(2)"), linetype = "dashed") +
-  geom_line(aes(y = pre_num_model_3, color = "model(3)"), linetype = "dashed") +
-  geom_line(aes(y = pre_num_model_4, color = "model(4)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_2, color = "model(2-1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_3, color = "model(2-2)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), linetype = "dashed") +
   scale_y_continuous(limits = c(0, NA)) +
   labs(
     title = "(a)Predicted Number of Suicides in the US",
@@ -1190,34 +3068,60 @@ p_pre_accu_us <- ggplot(test_us_suicide, aes(x = term)) +
     color = ""
   ) +
   scale_color_manual(values = c("black", "purple", "green", "orange", "red"),
-                     breaks = c("TRUE", "model(1)", "model(2)", "model(3)", "model(4)")) +
+                     breaks = c("TRUE", "model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
-
 plot(p_pre_accu_us)
+
+
+#visualizing best model with uncertainly
+p_pre_accu_us_2 <- ggplot(test_us_suicide, aes(x = term)) +
+  # Add confidence interval ribbon
+  geom_ribbon(aes(ymin = pre_num_model_4_lwr, 
+                  ymax = pre_num_model_4_upr,
+                  fill = "80% Credible Interval"),
+              alpha = 0.2) +
+  # Add true value and prediction lines
+  geom_line(aes(y = true_num, color = "TRUE")) +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), 
+            linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in the US",
+    subtitle = "with 80% Credible Interval",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The number of Suicide",
+    color = "Values",
+    fill = ""
+  ) +
+  scale_color_manual(values = c("black", "red"),
+                     breaks = c("TRUE", "model(3)")) +
+  scale_fill_manual(values = c("red")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_pre_accu_us_2)
 
 
 p_cumu_ae_us <- ggplot(test_us_suicide, aes(x = term)) +
   geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
-  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2)"),linetype = "dashed") +
-  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(3)"),linetype = "dashed") +
-  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(4)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2-1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(2-2)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(3)"),linetype = "dashed") +
   scale_y_continuous(limits = c(0, NA)) +
   labs(
     title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in the US",
     x = "Term (Jan 2018 - Dec 2019)",
-    y = "Comulative Absolutely Error",
+    y = "Cumulative Absolute Error",
     color = ""
   ) +
   scale_color_manual(values = c("purple", "green", "orange", "red"),
-                     breaks = c("model(1)", "model(2)", "model(3)", "model(4)")) +
+                     breaks = c("model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
-
 plot(p_cumu_ae_us)
-
 
 
 # Combine the two plots vertically
@@ -1229,6 +3133,236 @@ combined_plot_suicide_us <- p_pre_accu_us / p_cumu_ae_us +
 # Display the combined plot
 plot(combined_plot_suicide_us) 
 
+# model vilification (US Male) -------------------------------------------------
+#sumary bsts
+#variables choose by spike and slab
+summary_model_bsts_us_suicide_spike_slab_male <- summary(model_bsts_us_suicide_spike_slab_male)
+summary_model_bsts_us_suicide_spike_slab_male$coefficients[,"inc.prob"]
+
+#create data frame
+coefficients_df_model_bsts_us_suicide_spike_slab_male  <- data.frame(
+  variable = rownames(summary_model_bsts_us_suicide_spike_slab_male$coefficients),
+  inc_prob = summary_model_bsts_us_suicide_spike_slab_male$coefficients[, "inc.prob"],
+  mean = summary_model_bsts_us_suicide_spike_slab_male$coefficients[, "mean"])
+
+#ordered by incprob
+coefficients_df_model_bsts_us_suicide_spike_slab_male <- coefficients_df_model_bsts_us_suicide_spike_slab_male %>%
+  arrange(desc(inc_prob))
+coefficients_df_model_bsts_us_suicide_spike_slab_male$variable[coefficients_df_model_bsts_us_suicide_spike_slab_male$inc_prob >= 0.1]
+
+#edit variable names for visualization
+new_variable_names_label_spike_slab_us_male <- str_remove(str_remove(coefficients_df_model_bsts_us_suicide_spike_slab_male$variable, "^query_"), "_scaled$")
+new_variable_names_label_spike_slab_us_male <- str_replace_all(new_variable_names_label_spike_slab_us_male, "_", " ")
+coefficients_df_model_bsts_us_suicide_spike_slab_male$variable <- new_variable_names_label_spike_slab_us_male
+
+p_coef_spike_slab_us_male <- ggplot(coefficients_df_model_bsts_us_suicide_spike_slab_male %>% filter(variable != "(Intercept)"), aes(x = reorder(variable, inc_prob), y = inc_prob, fill = mean < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("FALSE" = "blue", "TRUE" = "red"),
+                    labels = c("Plus", "Minus"),
+                    name = "Coefficient Sign") + 
+  labs(x = "Variables",
+       y = "Inclusion Probability",
+       title = "Inclusion Probabilities for Spike-and-Slab Regression in the US (Male)",
+       fill = "Coefficient Sign") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.y = element_text(color = "black", size = 12)
+  )
+
+plot(p_coef_spike_slab_us_male)
+
+#compare final results
+#accuracy
+#rate
+accuracy(test_us_suicide_male$pre_rate_model_1, test_us_suicide_male$true_rate)
+accuracy(test_us_suicide_male$pre_rate_model_2, test_us_suicide_male$true_rate)
+accuracy(test_us_suicide_male$pre_rate_model_3, test_us_suicide_male$true_rate)
+accuracy(test_us_suicide_male$pre_rate_model_4, test_us_suicide_male$true_rate)
+
+#num
+accuracy(test_us_suicide_male$pre_num_model_1, test_us_suicide_male$true_num)
+accuracy(test_us_suicide_male$pre_num_model_2, test_us_suicide_male$true_num)
+accuracy(test_us_suicide_male$pre_num_model_3, test_us_suicide_male$true_num)
+accuracy(test_us_suicide_male$pre_num_model_4, test_us_suicide_male$true_num)
+
+#cumulative AE for test
+#calculate AE
+test_us_suicide_male$abs_error_model_1 <- abs(test_us_suicide_male$true_num - test_us_suicide_male$pre_num_model_1)
+test_us_suicide_male$abs_error_model_2 <- abs(test_us_suicide_male$true_num - test_us_suicide_male$pre_num_model_2)
+test_us_suicide_male$abs_error_model_3 <- abs(test_us_suicide_male$true_num - test_us_suicide_male$pre_num_model_3)
+test_us_suicide_male$abs_error_model_4 <- abs(test_us_suicide_male$true_num - test_us_suicide_male$pre_num_model_4)
+
+#calculate comulative AE
+test_us_suicide_male$cumulative_abs_error_model_1 <- cumsum(test_us_suicide_male$abs_error_model_1)
+test_us_suicide_male$cumulative_abs_error_model_2 <- cumsum(test_us_suicide_male$abs_error_model_2)
+test_us_suicide_male$cumulative_abs_error_model_3 <- cumsum(test_us_suicide_male$abs_error_model_3)
+test_us_suicide_male$cumulative_abs_error_model_4 <- cumsum(test_us_suicide_male$abs_error_model_4)
+
+#visualizing accuracy
+p_pre_accu_us_male <- ggplot(test_us_suicide_male, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE")) +
+  geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_2, color = "model(2-1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_3, color = "model(2-2)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(a)Predicted Number of Suicides in the US (Male)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The number of Suicide",
+    color = ""
+  ) +
+  scale_color_manual(values = c("black", "purple", "green", "orange", "red"),
+                     breaks = c("TRUE", "model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_pre_accu_us_male)
+
+p_cumu_ae_us_male <- ggplot(test_us_suicide_male, aes(x = term)) +
+  geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2-1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(2-2)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(3)"),linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in the US (Male)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "Cumulative Absolute Error",
+    color = ""
+  ) +
+  scale_color_manual(values = c("purple", "green", "orange", "red"),
+                     breaks = c("model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_cumu_ae_us_male)
+
+# Combine the two plots vertically
+combined_plot_suicide_us_male <- p_pre_accu_us_male / p_cumu_ae_us_male +
+  plot_layout(heights = c(1, 1)) +  # Set equal heights for both plots
+  plot_annotation(tag_levels = 'a') &  # Automatically add labels (a), (b)
+  theme(plot.tag = element_text(face = "bold"))  # Make labels bold
+
+# Display the combined plot
+plot(combined_plot_suicide_us_male)
+# model vilification (US Female) -------------------------------------------------
+#sumary bsts
+#variables choose by spike and slab
+summary_model_bsts_us_suicide_spike_slab_female <- summary(model_bsts_us_suicide_spike_slab_female)
+summary_model_bsts_us_suicide_spike_slab_female$coefficients[,"inc.prob"]
+
+#create data frame
+coefficients_df_model_bsts_us_suicide_spike_slab_female  <- data.frame(
+  variable = rownames(summary_model_bsts_us_suicide_spike_slab_female$coefficients),
+  inc_prob = summary_model_bsts_us_suicide_spike_slab_female$coefficients[, "inc.prob"],
+  mean = summary_model_bsts_us_suicide_spike_slab_female$coefficients[, "mean"])
+
+#ordered by incprob
+coefficients_df_model_bsts_us_suicide_spike_slab_female <- coefficients_df_model_bsts_us_suicide_spike_slab_female %>%
+  arrange(desc(inc_prob))
+coefficients_df_model_bsts_us_suicide_spike_slab_female$variable[coefficients_df_model_bsts_us_suicide_spike_slab_female$inc_prob >= 0.1]
+
+#edit variable names for visualization
+new_variable_names_label_spike_slab_us_female <- str_remove(str_remove(coefficients_df_model_bsts_us_suicide_spike_slab_female$variable, "^query_"), "_scaled$")
+new_variable_names_label_spike_slab_us_female <- str_replace_all(new_variable_names_label_spike_slab_us_female, "_", " ")
+coefficients_df_model_bsts_us_suicide_spike_slab_female$variable <- new_variable_names_label_spike_slab_us_female
+
+p_coef_spike_slab_us_female <- ggplot(coefficients_df_model_bsts_us_suicide_spike_slab_female %>% filter(variable != "(Intercept)"), aes(x = reorder(variable, inc_prob), y = inc_prob, fill = mean < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("FALSE" = "blue", "TRUE" = "red"),
+                    labels = c("Plus", "Minus"),
+                    name = "Coefficient Sign") + 
+  labs(x = "Variables",
+       y = "Inclusion Probability",
+       title = "Inclusion Probabilities for Spike-and-Slab Regression in the US (Female)",
+       fill = "Coefficient Sign") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.y = element_text(color = "black", size = 12)
+  )
+
+plot(p_coef_spike_slab_us_female)
+
+#compare final results
+#accuracy
+#rate
+accuracy(test_us_suicide_female$pre_rate_model_1, test_us_suicide_female$true_rate)
+accuracy(test_us_suicide_female$pre_rate_model_2, test_us_suicide_female$true_rate)
+accuracy(test_us_suicide_female$pre_rate_model_3, test_us_suicide_female$true_rate)
+accuracy(test_us_suicide_female$pre_rate_model_4, test_us_suicide_female$true_rate)
+
+#num
+accuracy(test_us_suicide_female$pre_num_model_1, test_us_suicide_female$true_num)
+accuracy(test_us_suicide_female$pre_num_model_2, test_us_suicide_female$true_num)
+accuracy(test_us_suicide_female$pre_num_model_3, test_us_suicide_female$true_num)
+accuracy(test_us_suicide_female$pre_num_model_4, test_us_suicide_female$true_num)
+
+#cumulative AE for test
+#calculate AE
+test_us_suicide_female$abs_error_model_1 <- abs(test_us_suicide_female$true_num - test_us_suicide_female$pre_num_model_1)
+test_us_suicide_female$abs_error_model_2 <- abs(test_us_suicide_female$true_num - test_us_suicide_female$pre_num_model_2)
+test_us_suicide_female$abs_error_model_3 <- abs(test_us_suicide_female$true_num - test_us_suicide_female$pre_num_model_3)
+test_us_suicide_female$abs_error_model_4 <- abs(test_us_suicide_female$true_num - test_us_suicide_female$pre_num_model_4)
+
+#calculate comulative AE
+test_us_suicide_female$cumulative_abs_error_model_1 <- cumsum(test_us_suicide_female$abs_error_model_1)
+test_us_suicide_female$cumulative_abs_error_model_2 <- cumsum(test_us_suicide_female$abs_error_model_2)
+test_us_suicide_female$cumulative_abs_error_model_3 <- cumsum(test_us_suicide_female$abs_error_model_3)
+test_us_suicide_female$cumulative_abs_error_model_4 <- cumsum(test_us_suicide_female$abs_error_model_4)
+
+#visualizing accuracy
+p_pre_accu_us_female <- ggplot(test_us_suicide_female, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE")) +
+  geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_2, color = "model(2-1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_3, color = "model(2-2)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(a)Predicted Number of Suicides in the US (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The number of Suicide",
+    color = ""
+  ) +
+  scale_color_manual(values = c("black", "purple", "green", "orange", "red"),
+                     breaks = c("TRUE", "model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_pre_accu_us_female)
+
+p_cumu_ae_us_female <- ggplot(test_us_suicide_female, aes(x = term)) +
+  geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2-1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(2-2)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(3)"),linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in the US (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "Cumulative Absolute Error",
+    color = ""
+  ) +
+  scale_color_manual(values = c("purple", "green", "orange", "red"),
+                     breaks = c("model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_cumu_ae_us_female)
+
+# Combine the two plots vertically
+combined_plot_suicide_us_female <- p_pre_accu_us_female / p_cumu_ae_us_female +
+  plot_layout(heights = c(1, 1)) +  # Set equal heights for both plots
+  plot_annotation(tag_levels = 'a') &  # Automatically add labels (a), (b)
+  theme(plot.tag = element_text(face = "bold"))  # Make labels bold
+
+# Display the combined plot
+plot(combined_plot_suicide_us_female)
 # model vilification (JP) -------------------------------------------------
 #sumary bsts
 #variables choose by spike and slab
@@ -1299,8 +3433,120 @@ test_jp_suicide$cumulative_abs_error_model_4 <- cumsum(test_jp_suicide$abs_error
 
 
 
-#visualizing accucacy
+#visualizing accuracy
 p_pre_accu_jp <- ggplot(test_jp_suicide, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE")) +
+  geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_2, color = "model(2-1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_3, color = "model(2-2)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(a)Predicted Number of Suicides in Japan",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The number of Suicide",
+    color = ""
+  ) +
+  scale_color_manual(values = c("black", "purple", "green", "orange", "red"),
+                     breaks = c("TRUE", "model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_pre_accu_jp)
+
+p_cumu_ae_jp <- ggplot(test_jp_suicide, aes(x = term)) +
+  geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2-1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(2-2)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(3)"),linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in Japan",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "Cumulative Absolute Error",
+    color = ""
+  ) +
+  scale_color_manual(values = c("purple", "green", "orange", "red"),
+                     breaks = c("model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_cumu_ae_jp)
+
+# Combine the two plots for Japan vertically
+combined_plot_suicide_jp <- p_pre_accu_jp / p_cumu_ae_jp +
+  plot_layout(heights = c(1, 1)) +  # Set equal heights for both plots
+  plot_annotation(tag_levels = 'a') &  # Automatically add labels (a), (b)
+  theme(plot.tag = element_text(face = "bold"))  # Make labels bold
+
+# Display the combined plot
+print(combined_plot_suicide_jp)
+# model vilification (JP Male) -------------------------------------------------
+#sumary bsts
+#variables choose by spike and slab
+summary_model_bsts_jp_suicide_spike_slab_male <- summary(model_bsts_jp_suicide_spike_slab_male)
+summary_model_bsts_jp_suicide_spike_slab_male$coefficients[,"inc.prob"]
+#create data frame
+coefficients_df_model_bsts_jp_suicide_spike_slab_male  <- data.frame(
+  variable = rownames(summary_model_bsts_jp_suicide_spike_slab_male$coefficients),
+  inc_prob = summary_model_bsts_jp_suicide_spike_slab_male$coefficients[, "inc.prob"],
+  mean = summary_model_bsts_jp_suicide_spike_slab_male$coefficients[, "mean"])
+#ordered by incprob
+coefficients_df_model_bsts_jp_suicide_spike_slab_male <- coefficients_df_model_bsts_jp_suicide_spike_slab_male %>%
+  arrange(desc(inc_prob))
+coefficients_df_model_bsts_jp_suicide_spike_slab_male$variable[coefficients_df_model_bsts_jp_suicide_spike_slab_male$inc_prob >= 0.1]
+
+#edit labels of variables for visualization
+new_variable_names_label_spike_slab_jp_male <- str_remove(str_remove(coefficients_df_model_bsts_jp_suicide_spike_slab_male$variable, "^query_"), "_scaled$")
+new_variable_names_label_spike_slab_jp_male <- str_replace_all(new_variable_names_label_spike_slab_jp_male, "_", " ")
+coefficients_df_model_bsts_jp_suicide_spike_slab_male$variable <- new_variable_names_label_spike_slab_jp_male
+
+p_coef_spike_slab_jp_male <-  ggplot(coefficients_df_model_bsts_jp_suicide_spike_slab_male %>% filter(variable != "(Intercept)"), aes(x = reorder(variable, inc_prob), y = inc_prob, fill = mean < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("FALSE" = "blue", "TRUE" = "red"),
+                    labels = c("Plus", "Minus"),
+                    name = "Coefficient Sign") + 
+  labs(x = "Variables",
+       y = "Inclusion Probability",
+       title = "Inclusion Probabilities for Spike-and-Slab Regression in Japan (Male)",
+       fill = "Coefficient Sign") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.y = element_text(color = "black", size = 12)
+  )
+
+plot(p_coef_spike_slab_jp_male)
+
+#compare final results
+#accuracy
+#rate
+accuracy(test_jp_suicide_male$pre_rate_model_1,test_jp_suicide_male$true_rate)
+accuracy(test_jp_suicide_male$pre_rate_model_2,test_jp_suicide_male$true_rate)
+accuracy(test_jp_suicide_male$pre_rate_model_3,test_jp_suicide_male$true_rate)
+accuracy(test_jp_suicide_male$pre_rate_model_4,test_jp_suicide_male$true_rate)
+#num
+accuracy(test_jp_suicide_male$pre_num_model_1,test_jp_suicide_male$true_num)
+accuracy(test_jp_suicide_male$pre_num_model_2,test_jp_suicide_male$true_num)
+accuracy(test_jp_suicide_male$pre_num_model_3,test_jp_suicide_male$true_num)
+accuracy(test_jp_suicide_male$pre_num_model_4,test_jp_suicide_male$true_num)
+
+#cumulative AE for test
+#calculate AE
+test_jp_suicide_male$abs_error_model_1 <- abs(test_jp_suicide_male$true_num - test_jp_suicide_male$pre_num_model_1)
+test_jp_suicide_male$abs_error_model_2 <- abs(test_jp_suicide_male$true_num - test_jp_suicide_male$pre_num_model_2)
+test_jp_suicide_male$abs_error_model_3 <- abs(test_jp_suicide_male$true_num - test_jp_suicide_male$pre_num_model_3)
+test_jp_suicide_male$abs_error_model_4 <- abs(test_jp_suicide_male$true_num - test_jp_suicide_male$pre_num_model_4)
+
+#calculate comulative AE
+test_jp_suicide_male$cumulative_abs_error_model_1 <- cumsum(test_jp_suicide_male$abs_error_model_1)
+test_jp_suicide_male$cumulative_abs_error_model_2 <- cumsum(test_jp_suicide_male$abs_error_model_2)
+test_jp_suicide_male$cumulative_abs_error_model_3 <- cumsum(test_jp_suicide_male$abs_error_model_3)
+test_jp_suicide_male$cumulative_abs_error_model_4 <- cumsum(test_jp_suicide_male$abs_error_model_4)
+
+#visualizing accucacy
+p_pre_accu_jp_male <- ggplot(test_jp_suicide_male, aes(x = term)) +
   geom_line(aes(y = true_num, color = "TRUE")) +
   geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
   geom_line(aes(y = pre_num_model_2, color = "model(2)"), linetype = "dashed") +
@@ -1308,7 +3554,7 @@ p_pre_accu_jp <- ggplot(test_jp_suicide, aes(x = term)) +
   geom_line(aes(y = pre_num_model_4, color = "model(4)"), linetype = "dashed") +
   scale_y_continuous(limits = c(0, NA)) +
   labs(
-    title = "(a)Predicted Number of Suicides in Japan",
+    title = "(a)Predicted Number of Suicides in Japan (Male)",
     x = "Term (Jan 2018 - Dec 2019)",
     y = "The number of Suicide",
     color = ""
@@ -1318,18 +3564,16 @@ p_pre_accu_jp <- ggplot(test_jp_suicide, aes(x = term)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
-plot(p_pre_accu_jp)
+plot(p_pre_accu_jp_male)
 
-
-
-p_cumu_ae_jp <- ggplot(test_jp_suicide, aes(x = term)) +
+p_cumu_ae_jp_male <- ggplot(test_jp_suicide_male, aes(x = term)) +
   geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
   geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2)"),linetype = "dashed") +
   geom_line(aes(y = cumulative_abs_error_model_3, color = "model(3)"),linetype = "dashed") +
   geom_line(aes(y = cumulative_abs_error_model_4, color = "model(4)"),linetype = "dashed") +
   scale_y_continuous(limits = c(0, NA)) +
   labs(
-    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in the Japan",
+    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in Japan (Male)",
     x = "Term (Jan 2018 - Dec 2019)",
     y = "Comulative Absolutely Error",
     color = ""
@@ -1340,16 +3584,126 @@ p_cumu_ae_jp <- ggplot(test_jp_suicide, aes(x = term)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
 
-plot(p_cumu_ae_jp)
+plot(p_cumu_ae_jp_male)
 
-
-# Combine the two plots for Japan vertically
-combined_plot_suicide_jp <- p_pre_accu_jp / p_cumu_ae_jp +
+# Combine the two plots for Japan (Male) vertically
+combined_plot_suicide_jp_male <- p_pre_accu_jp_male / p_cumu_ae_jp_male +
   plot_layout(heights = c(1, 1)) +  # Set equal heights for both plots
   plot_annotation(tag_levels = 'a') &  # Automatically add labels (a), (b)
   theme(plot.tag = element_text(face = "bold"))  # Make labels bold
 
 # Display the combined plot
-print(combined_plot_suicide_jp)
+print(combined_plot_suicide_jp_male)
 
+# model vilification (JP Female) -------------------------------------------------
+#sumary bsts
+#variables choose by spike and slab
+summary_model_bsts_jp_suicide_spike_slab_female <- summary(model_bsts_jp_suicide_spike_slab_female)
+summary_model_bsts_jp_suicide_spike_slab_female$coefficients[,"inc.prob"]
+#create data frame
+coefficients_df_model_bsts_jp_suicide_spike_slab_female  <- data.frame(
+  variable = rownames(summary_model_bsts_jp_suicide_spike_slab_female$coefficients),
+  inc_prob = summary_model_bsts_jp_suicide_spike_slab_female$coefficients[, "inc.prob"],
+  mean = summary_model_bsts_jp_suicide_spike_slab_female$coefficients[, "mean"])
+#ordered by incprob
+coefficients_df_model_bsts_jp_suicide_spike_slab_female <- coefficients_df_model_bsts_jp_suicide_spike_slab_female %>%
+  arrange(desc(inc_prob))
+coefficients_df_model_bsts_jp_suicide_spike_slab_female$variable[coefficients_df_model_bsts_jp_suicide_spike_slab_female$inc_prob >= 0.1]
 
+#edit labels of variables for visualization
+new_variable_names_label_spike_slab_jp_female <- str_remove(str_remove(coefficients_df_model_bsts_jp_suicide_spike_slab_female$variable, "^query_"), "_scaled$")
+new_variable_names_label_spike_slab_jp_female <- str_replace_all(new_variable_names_label_spike_slab_jp_female, "_", " ")
+coefficients_df_model_bsts_jp_suicide_spike_slab_female$variable <- new_variable_names_label_spike_slab_jp_female
+
+p_coef_spike_slab_jp_female <-  ggplot(coefficients_df_model_bsts_jp_suicide_spike_slab_female %>% filter(variable != "(Intercept)"), aes(x = reorder(variable, inc_prob), y = inc_prob, fill = mean < 0)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("FALSE" = "blue", "TRUE" = "red"),
+                    labels = c("Plus", "Minus"),
+                    name = "Coefficient Sign") + 
+  labs(x = "Variables",
+       y = "Inclusion Probability",
+       title = "Inclusion Probabilities for Spike-and-Slab Regression in Japan (Female)",
+       fill = "Coefficient Sign") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.y = element_text(color = "black", size = 12)
+  )
+
+plot(p_coef_spike_slab_jp_female)
+
+#compare final results
+#accuracy
+#rate
+accuracy(test_jp_suicide_female$pre_rate_model_1,test_jp_suicide_female$true_rate)
+accuracy(test_jp_suicide_female$pre_rate_model_2,test_jp_suicide_female$true_rate)
+accuracy(test_jp_suicide_female$pre_rate_model_3,test_jp_suicide_female$true_rate)
+accuracy(test_jp_suicide_female$pre_rate_model_4,test_jp_suicide_female$true_rate)
+#num
+accuracy(test_jp_suicide_female$pre_num_model_1,test_jp_suicide_female$true_num)
+accuracy(test_jp_suicide_female$pre_num_model_2,test_jp_suicide_female$true_num)
+accuracy(test_jp_suicide_female$pre_num_model_3,test_jp_suicide_female$true_num)
+accuracy(test_jp_suicide_female$pre_num_model_4,test_jp_suicide_female$true_num)
+
+#cumulative AE for test
+#calculate AE
+test_jp_suicide_female$abs_error_model_1 <- abs(test_jp_suicide_female$true_num - test_jp_suicide_female$pre_num_model_1)
+test_jp_suicide_female$abs_error_model_2 <- abs(test_jp_suicide_female$true_num - test_jp_suicide_female$pre_num_model_2)
+test_jp_suicide_female$abs_error_model_3 <- abs(test_jp_suicide_female$true_num - test_jp_suicide_female$pre_num_model_3)
+test_jp_suicide_female$abs_error_model_4 <- abs(test_jp_suicide_female$true_num - test_jp_suicide_female$pre_num_model_4)
+
+#calculate comulative AE
+test_jp_suicide_female$cumulative_abs_error_model_1 <- cumsum(test_jp_suicide_female$abs_error_model_1)
+test_jp_suicide_female$cumulative_abs_error_model_2 <- cumsum(test_jp_suicide_female$abs_error_model_2)
+test_jp_suicide_female$cumulative_abs_error_model_3 <- cumsum(test_jp_suicide_female$abs_error_model_3)
+test_jp_suicide_female$cumulative_abs_error_model_4 <- cumsum(test_jp_suicide_female$abs_error_model_4)
+
+#visualizing accuracy
+p_pre_accu_jp_female <- ggplot(test_jp_suicide_female, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE")) +
+  geom_line(aes(y = pre_num_model_1, color = "model(1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_2, color = "model(2-1)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_3, color = "model(2-2)"), linetype = "dashed") +
+  geom_line(aes(y = pre_num_model_4, color = "model(3)"), linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(a)Predicted Number of Suicides in Japan (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The number of Suicide",
+    color = ""
+  ) +
+  scale_color_manual(values = c("black", "purple", "green", "orange", "red"),
+                     breaks = c("TRUE", "model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_pre_accu_jp_female)
+
+p_cumu_ae_jp_female <- ggplot(test_jp_suicide_female, aes(x = term)) +
+  geom_line(aes(y = cumulative_abs_error_model_1,  color = "model(1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_2 ,  color = "model(2-1)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_3, color = "model(2-2)"),linetype = "dashed") +
+  geom_line(aes(y = cumulative_abs_error_model_4, color = "model(3)"),linetype = "dashed") +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "(b)Cumulative Absolute Error in Test Set for the Number of Suicides in Japan (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "Cumulative Absolute Error",
+    color = ""
+  ) +
+  scale_color_manual(values = c("purple", "green", "orange", "red"),
+                     breaks = c("model(1)", "model(2-1)", "model(2-2)", "model(3)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+plot(p_cumu_ae_jp_female)
+
+# Combine the two plots for Japan (Female) vertically
+combined_plot_suicide_jp_female <- p_pre_accu_jp_female / p_cumu_ae_jp_female +
+  plot_layout(heights = c(1, 1)) +  # Set equal heights for both plots
+  plot_annotation(tag_levels = 'a') &  # Automatically add labels (a), (b)
+  theme(plot.tag = element_text(face = "bold"))  # Make labels bold
+
+# Display the combined plot
+print(combined_plot_suicide_jp_female)
