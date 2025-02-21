@@ -104,6 +104,8 @@ scale_max_min_vector_inverse <- function(scaled_values, min_val, max_val) {
 # Read df_main_es from the data directory
 df_main_es <- read.csv("data/df_main_es.csv")
 df_main_es %>% names()
+
+df_main_es$term <- as.Date(df_main_es$term)
   
 # Read query_en_es from the data directory
 query_en_es <- read.csv("data/query_en_es.csv")
@@ -196,6 +198,96 @@ test_es_suicide_female <- data.frame(
   true_num = df_main_es$num_suicide_female[df_main_es$term >= "2018-01-01"]
 )
 
+# add_new_query(BZD) -----------------------------------------------------------
+query_BZD <- read.csv("data/query_BZD.csv")
+query_BZD$month <- as.Date(query_BZD$month)
+query_BZD <- query_BZD %>% rename(term = month)
+df_main_es_add_BZD <- df_main_es
+#add new query about 
+df_main_es_add_BZD <- left_join(df_main_es_add_BZD,query_BZD, by = "term")
+
+
+query_BZD %>% names()
+#scale BZD
+for(column_name in c("query_benzodiacepina","query_benzodiacepinas")){
+  scaled_vector <- scale_max_min_vector(df_main_es_add_BZD, column_name, "2016-12-01")
+  new_column_name <- paste(column_name, "scaled", sep = "_")
+  df_main_es_add_BZD[[new_column_name]] <- scaled_vector
+}
+
+# lag1
+for(column_name in c("query_benzodiacepina_scaled","query_benzodiacepinas_scaled","query_alcohol_scaled")){
+  new_column_name <- paste(column_name, "lag1", sep = "_")
+  df_main_es_add_BZD[[new_column_name]] <- dplyr::lag(df_main_es_add_BZD[[column_name]], n = 1)
+}
+
+#df_main_es_add_BZD <- df_main_es_add_BZD　%>% filter(term >= "2004-02-01")
+
+# Create training datasets for BSTS model (including BZD-related queries and lag1)
+train_for_bsts_es_suicide_BZD <- df_main_es_add_BZD %>%
+  filter(term <= "2016-12-01") %>%
+  dplyr::select(suicide_rate_total_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+
+train_for_bsts_es_suicide_male_BZD <- df_main_es_add_BZD %>%
+  filter(term <= "2016-12-01") %>%
+  dplyr::select(suicide_rate_male_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+
+train_for_bsts_es_suicide_female_BZD <- df_main_es_add_BZD %>%
+  filter(term <= "2016-12-01") %>%
+  dplyr::select(suicide_rate_female_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+
+# Create test datasets
+test_for_bsts_es_suicide_BZD <- df_main_es_add_BZD %>%
+  dplyr::select(suicide_rate_total_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+
+test_for_bsts_es_suicide_male_BZD <- df_main_es_add_BZD %>%
+  dplyr::select(suicide_rate_male_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+
+test_for_bsts_es_suicide_female_BZD <- df_main_es_add_BZD %>%
+  dplyr::select(suicide_rate_female_scaled, all_of(scaled_query_columns), 
+                query_benzodiacepina_scaled, query_benzodiacepina_scaled_lag1,
+                query_benzodiacepinas_scaled, query_benzodiacepinas_scaled_lag1,
+                query_alcohol_scaled, query_alcohol_scaled_lag1)
+# Set the last 36 rows of the target columns to NA
+test_for_bsts_es_suicide_BZD$suicide_rate_total_scaled[(nrow(test_for_bsts_es_suicide_BZD)-36+1):nrow(test_for_bsts_es_suicide_BZD)] <- NA
+test_for_bsts_es_suicide_male_BZD$suicide_rate_male_scaled[(nrow(test_for_bsts_es_suicide_male_BZD)-36+1):nrow(test_for_bsts_es_suicide_male_BZD)] <- NA
+test_for_bsts_es_suicide_female_BZD$suicide_rate_female_scaled[(nrow(test_for_bsts_es_suicide_female_BZD)-36+1):nrow(test_for_bsts_es_suicide_female_BZD)] <- NA
+
+# Create validation datasets
+val_es_suicide_BZD <- df_main_es_add_BZD$suicide_rate_total[df_main_es_add_BZD$term >= "2017-01-01" & df_main_es_add_BZD$term <= "2017-12-01"]
+val_es_suicide_male_BZD <- df_main_es_add_BZD$suicide_rate_male[df_main_es_add_BZD$term >= "2017-01-01" & df_main_es_add_BZD$term <= "2017-12-01"]
+val_es_suicide_female_BZD <- df_main_es_add_BZD$suicide_rate_female[df_main_es_add_BZD$term >= "2017-01-01" & df_main_es_add_BZD$term <= "2017-12-01"]
+
+
+
+
+
+
+ggplot(df_main_es_add_BZD, aes(x = term)) +
+  geom_line(aes(y = query_benzodiacepina_scaled, color = "query_benzodiacepina_scaled")) +
+  geom_line(aes(y = query_benzodiacepinas_scaled, color = "query_benzodiacepinas_scaled")) +
+  labs(title = "BZD Query Trends (Scaled)",
+       x = "Term",
+       y = "Scaled Query Count",
+       color = "Legend") +
+  theme_minimal()
+
+
 # descriptive statistics --------------------------------------------------
 window()
 p_trend_es <- ggplot(df_main_es, aes(x = term)) +
@@ -208,20 +300,287 @@ p_trend_es <- ggplot(df_main_es, aes(x = term)) +
        y = "Suicide Rate",
        color = "Gender") +
   scale_y_continuous(limits = c(0, NA)) +
+  scale_x_date(breaks = seq(from = min(na.omit(df_main_es$term)), 
+                            to = max(na.omit(df_main_es$term)), 
+                            by = "6 months")) +
   scale_color_manual(values = c("Total" = "black", "Male" = "blue", "Female" = "red")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
-
-
 print(p_trend_es)
+
+
+p_trend_es_scaled <- ggplot(df_main_es, aes(x = term)) +
+  geom_line(aes(y = suicide_rate_total_scaled, color = "Total", group = 1), size = 1) +
+  geom_line(aes(y = suicide_rate_male_scaled, color = "Male", group = 1), size = 1) +
+  geom_line(aes(y = suicide_rate_female_scaled, color = "Female", group = 1), size = 1) +
+  theme_minimal() +
+  labs(title = "ES Suicide Rate Over Time (Jan 2004 - Dec 2019)",
+       x = "Term (Jan 2004 - Dec 2019)",
+       y = "Suicide Rate",
+       color = "Gender") +
+  scale_y_continuous(limits = c(0, NA)) +
+  scale_x_date(breaks = seq(from = min(na.omit(df_main_es$term)), 
+                            to = max(na.omit(df_main_es$term)), 
+                            by = "6 months")) +
+  scale_color_manual(values = c("Total" = "black", "Male" = "blue", "Female" = "red")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
+print(p_trend_es_scaled)
+
 
 #confirm yearly data
 df_main_es %>%
   mutate(year = year(as.Date(term))) %>%  
   group_by(year) %>%
-  summarise(total_suicide_rate = sum(suicide_rate_total, na.rm = TRUE)) %>%
+  summarise(total_suicide_rate = sum(suicide_rate_total, na.rm = TRUE),
+            male_suicide_rate = sum(suicide_rate_male, na.rm = TRUE),
+            female_suicide_rate = sum(suicide_rate_female, na.rm = TRUE)) %>%
   print()
 
+
+#confirm ccorrelation
+# Create scaled query columns
+query_columns_scaled <- paste0(query_columns, "_scaled")
+
+# Remove constant columns
+constant_columns <- names(train_for_bsts_es_suicide)[sapply(train_for_bsts_es_suicide, function(x) length(unique(x)) == 1)]
+query_columns_scaled_for_train <- setdiff(query_columns_scaled, constant_columns)
+
+# 1. Compute correlation coefficients
+cor_matrix_before <- cor(df_main_es[df_main_es$term <= as.Date("2017-12-31"), query_columns_scaled_for_train], 
+                         df_main_es[df_main_es$term <= as.Date("2017-12-31"), c("suicide_rate_total_scaled", "suicide_rate_male_scaled", "suicide_rate_female_scaled")], 
+                         use = "pairwise.complete.obs")
+
+cor_matrix_after <- cor(df_main_es[df_main_es$term >= as.Date("2018-01-01"), query_columns_scaled_for_train], 
+                        df_main_es[df_main_es$term >= as.Date("2018-01-01"), c("suicide_rate_total_scaled", "suicide_rate_male_scaled", "suicide_rate_female_scaled")], 
+                        use = "pairwise.complete.obs")
+
+# 2. Replace NA values with 0
+cor_matrix_before[is.na(cor_matrix_before)] <- 0
+cor_matrix_after[is.na(cor_matrix_after)] <- 0
+
+# 3. Convert correlation matrices into data frames
+df_cor_before <- as.data.frame(cor_matrix_before)
+df_cor_after <- as.data.frame(cor_matrix_after)
+
+# 4. Remove "_scaled" from variable names
+df_cor_before$variable <- gsub("_scaled$", "", rownames(df_cor_before))
+df_cor_after$variable <- gsub("_scaled$", "", rownames(df_cor_after))
+
+# 5. Add the `test_set` column (0: before 2018, 1: after 2018)
+df_cor_before$test_set <- 0
+df_cor_after$test_set <- 1
+
+# 6. Merge both datasets vertically
+df_summary_cor <- rbind(df_cor_before, df_cor_after)
+
+# 7. Rename columns for clarity
+colnames(df_summary_cor) <- c("total", "male", "female", "variable", "test_set")
+
+# 1. Remove "query_" and "_" from variable names for cleaner y-axis labels
+df_summary_cor <- df_summary_cor %>%
+  mutate(variable_label = gsub("query_|_", " ", variable),
+         test_set = factor(test_set, levels = c(0, 1), labels = c("Train", "Test")))  # Convert test_set values
+
+# 2. Convert variable to a factor to maintain ordering in the plot
+df_summary_cor$variable_label <- factor(df_summary_cor$variable_label, levels = unique(df_summary_cor$variable_label))
+df_summary_cor %>% names()
+df_summary_cor %>% head()
+# 3. Reshape the data for ggplot (long format)
+df_summary_cor_long <- df_summary_cor %>%
+  dplyr::select(variable_label, test_set, total, male, female) %>%
+  pivot_longer(cols = c(total, male, female), names_to = "gender", values_to = "correlation")
+
+df_summary_cor_long %>% names()
+
+ggplot(df_summary_cor_long, aes(x = correlation, y = variable_label, fill = gender)) +
+  geom_col(position = "dodge") +  # Bars are placed side by side
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  # Vertical line at 0
+  facet_wrap(~ test_set) +  # Split by test_set (0: before 2018, 1: after 2018)
+  theme_minimal() +
+  labs(title = "Correlation of Variables with Suicide Rates",
+       x = "Correlation Coefficient",
+       y = "Variable",
+       fill = "Gender") +
+  theme(axis.text.y = element_text(size = 10),  # Adjust text size if necessary
+        legend.position = "bottom")
+
+
+cor(df_summary_cor$male[df_summary_cor$test_set == "Train"], df_summary_cor$female[df_summary_cor$test_set == "Train"], use = "complete.obs")
+cor(df_summary_cor$male[df_summary_cor$test_set == "Test"], df_summary_cor$female[df_summary_cor$test_set == "Test"], use = "complete.obs")
+
+
+# 1. Compute the difference between Train and Test correlations
+df_cor_diff <- df_summary_cor %>%
+  pivot_wider(names_from = test_set, values_from = c(total, male, female)) %>%
+  mutate(
+    total_diff = total_Train - total_Test,
+    male_diff = male_Train - male_Test,
+    female_diff = female_Train - female_Test
+  ) %>%
+  dplyr::select(variable, total_diff, male_diff, female_diff)  # Keep only differences
+
+# 2. Remove "query_" and replace "_" with spaces for better labels
+df_cor_diff <- df_cor_diff %>%
+  mutate(variable_label = gsub("query_|_", " ", variable))
+
+# 3. Convert data to long format for ggplot
+df_cor_diff_long <- df_cor_diff %>%
+  pivot_longer(cols = c(total_diff, male_diff, female_diff), 
+               names_to = "gender", values_to = "correlation_diff") %>%
+  mutate(gender = gsub("_diff", "", gender))  # Clean column names for legend
+
+ggplot(df_cor_diff_long, aes(x = correlation_diff, y = variable_label, fill = gender)) +
+  geom_col(position = "dodge") +  # Bars placed side by side
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  # Vertical reference line at 0
+  theme_minimal() +
+  labs(title = "Difference in Correlation Coefficients (Train - Test)",
+       x = "Correlation Difference (Train - Test)",
+       y = "Variable",
+       fill = "Gender") +
+  theme(axis.text.y = element_text(size = 10), 
+        legend.position = "bottom")
+
+
+cor(df_cor_diff$male_diff, df_cor_diff$female_diff, use = "complete.obs")
+
+
+
+# Function to get the top 15 correlated variables for a given column and test_set
+get_top_correlations <- function(df, target_column, test_set_value) {
+  df %>%
+    filter(test_set == test_set_value) %>%
+    arrange(desc(!!sym(target_column))) %>%
+    head(15) %>%
+    mutate(formatted = paste0(variable_label, " (", round(!!sym(target_column), 3), ")")) %>%  # Append correlation in parentheses
+    dplyr::select(formatted) %>%
+    rename(!!target_column := formatted)  # Rename column for merging
+}
+
+# Get top 15 correlated queries for Train
+top_train_total  <- get_top_correlations(df_summary_cor, "total", "Train")
+top_train_male   <- get_top_correlations(df_summary_cor, "male", "Train")
+top_train_female <- get_top_correlations(df_summary_cor, "female", "Train")
+
+# Get top 15 correlated queries for Test
+top_test_total  <- get_top_correlations(df_summary_cor, "total", "Test")
+top_test_male   <- get_top_correlations(df_summary_cor, "male", "Test")
+top_test_female <- get_top_correlations(df_summary_cor, "female", "Test")
+
+# Combine into a single data frame for Train
+df_top_train <- data.frame(
+  rank = 1:15,
+  total = top_train_total$total,
+  male = top_train_male$male,
+  female = top_train_female$female
+)
+
+# Combine into a single data frame for Test
+df_top_test <- data.frame(
+  rank = 1:15,
+  total = top_test_total$total,
+  male = top_test_male$male,
+  female = top_test_female$female
+)
+
+# Show results
+print("Top 15 Correlated Queries for Train:")
+print(df_top_train)
+
+print("Top 15 Correlated Queries for Test:")
+print(df_top_test)
+
+# Function to extract only the query name (remove correlation values in parentheses)
+clean_query_names <- function(query_list) {
+  str_remove(query_list, " \\(.*\\)")  # Remove everything inside and including the parentheses
+}
+
+# Clean up Train and Test data before comparison
+train_total_clean  <- clean_query_names(df_top_train$total)
+train_male_clean   <- clean_query_names(df_top_train$male)
+train_female_clean <- clean_query_names(df_top_train$female)
+
+test_total_clean  <- clean_query_names(df_top_test$total)
+test_male_clean   <- clean_query_names(df_top_test$male)
+test_female_clean <- clean_query_names(df_top_test$female)
+
+# Function to calculate the proportion of overlap between Train and Test top 15 queries
+calculate_overlap_ratio <- function(train_col, test_col) {
+  overlap <- sum(train_col %in% test_col)  # Count matching queries
+  return(overlap / 15)  # Compute proportion
+}
+
+# Compute overlap proportions for total, male, and female
+total_overlap_ratio  <- calculate_overlap_ratio(train_total_clean, test_total_clean)
+male_overlap_ratio   <- calculate_overlap_ratio(train_male_clean, test_male_clean)
+female_overlap_ratio <- calculate_overlap_ratio(train_female_clean, test_female_clean)
+
+# Create a summary data frame
+df_overlap_ratio <- data.frame(
+  category = c("total", "male", "female"),
+  overlap_ratio = c(total_overlap_ratio, male_overlap_ratio, female_overlap_ratio)
+)
+
+# Display results
+print("Proportion of Train Top 15 Queries that also appear in Test:")
+print(df_overlap_ratio)
+
+
+# split data by between Train and Test
+df_wide <- df_summary_cor_long %>%
+  pivot_wider(names_from = test_set, values_from = correlation)
+
+gender_levels <- c("total", "male", "female")
+df_wide$gender <- factor(df_wide$gender, levels = gender_levels)
+
+#create scatter plot
+ggplot(df_wide, aes(x = Train, y = Test, color = gender)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +  # genderごとの回帰直線を追加
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
+  labs(x = "Train Correlation", y = "Test Correlation",
+       title = "Train vs Test Correlation Scatter Plot") +
+  theme_minimal() +
+  scale_color_manual(values = c("total" = "blue", "female" = "red", "male" = "green"))
+
+#create scatter plot with labels
+ggplot(df_wide, aes(x = Train, y = Test, color = gender, label = variable_label)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +  # genderごとの回帰直線を追加
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
+  geom_text(vjust = -0.5, hjust = 0.5, size = 4) +  # ラベルを追加
+  labs(x = "Train Correlation", y = "Test Correlation",
+       title = "Train vs Test Correlation Scatter Plot") +
+  theme_minimal() +
+  scale_color_manual(values = c("total" = "blue", "female" = "red", "male" = "green"))
+
+
+cor_results <- df_wide %>%
+  group_by(gender) %>%
+  summarise(correlation = cor(Train, Test, use = "complete.obs"))
+
+
+
+# create scatter plot with labels
+ggplot(df_wide, aes(x = Train, y = Test, color = gender, label = variable_label)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +  # genderごとの回帰直線を追加
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
+  geom_text(vjust = -0.5, hjust = 0.5, size = 3) +  # ラベルを追加
+  labs(x = "Train Correlation", y = "Test Correlation",
+       title = "Train vs Test Correlation Between Suicide Rate and Search Queries") +
+  theme_minimal() +
+  scale_color_manual(values = c("total" = "blue", "male" = "green", "female" = "red")) +
+  guides(color = guide_legend(order = 1)) +  # 凡例の順番指定
+  facet_wrap(~ gender, scales = "free") +
+  theme(
+    strip.text = element_text(size = 14, face = "bold")  # ファセットタイトルのフォントサイズを大きく
+  ) +
+  geom_text(data = cor_results, aes(x = min(df_wide$Train), y = max(df_wide$Test), 
+                                    label = paste0("r = ", round(correlation, 3))),
+            color = "black", hjust = 0, size = 5, inherit.aes = FALSE)
+
+#calculate corre;ation
 
 # all----------------------------------------------------------
 #  model1----------------------------------------------------------
@@ -337,6 +696,7 @@ ss_es_suicide_tv_sd <- AddDynamicRegression(ss_es_suicide_tv_sd, formula(suicide
 iterations <- c(2000, 4000, 8000, 16000)
 burn_in_percentages <- c(0.1, 0.20, 0.30, 0.40)
 
+
 # Set up parallel processing using furrr
 plan(multisession, workers = detectCores() - 1)
 
@@ -361,7 +721,10 @@ model_selection_es_model_2 <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )
+    
+    #fixed
+    pre_bsts_es_suicide_tv_sd <- pre_bsts_es_suicide_tv_sd$mean[(nrow(test_for_bsts_es_suicide)-36+1):(nrow(test_for_bsts_es_suicide)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_sd <- scale_max_min_vector_inverse(
@@ -369,7 +732,7 @@ model_selection_es_model_2 <- future_map_dfr(iterations, function(iter) {
       min(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"]),
       max(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"])
     )
-    
+  
     # Calculate accuracy metrics
     accuracy_results <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_sd, val_es_suicide)
     
@@ -426,6 +789,8 @@ print(accuracy(test_es_suicide$pre_rate_model_2, test_es_suicide$true_rate))
 print(accuracy(test_es_suicide$pre_num_model_2, test_es_suicide$true_num))
 
 
+
+
 # model2-2 ------------------------------------------------------------------
 # Add local level
 ss_es_suicide_tv_all <- AddLocalLevel(state.specification = list(), train_for_bsts_es_suicide$suicide_rate_total_scaled)
@@ -474,7 +839,7 @@ model_selection_es_model_3 <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )$mean[(nrow(test_for_bsts_es_suicide)-36+1):(nrow(test_for_bsts_es_suicide)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_all <- scale_max_min_vector_inverse(
@@ -581,7 +946,7 @@ model_selection_es_model_4 <- future_map_dfr(iterations, function(iter) {
                                                 newdata = test_for_bsts_es_suicide,
                                                 niter = iter,
                                                 burn = burn,
-                                                seed = 42)$mean
+                                                seed = 42)$mean[(nrow(test_for_bsts_es_suicide)-36+1):(nrow(test_for_bsts_es_suicide)-24)]
       
       # Inverse scale transformation
       pre_bsts_es_suicide_rate_spike_slab <- scale_max_min_vector_inverse(
@@ -787,7 +1152,7 @@ model_selection_es_model_2_male <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )$mean[(nrow(test_for_bsts_es_suicide_male)-36+1):(nrow(test_for_bsts_es_suicide_male)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_sd_male <- scale_max_min_vector_inverse(
@@ -899,7 +1264,7 @@ model_selection_es_model_3_male <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )$mean[(nrow(test_for_bsts_es_suicide_male)-36+1):(nrow(test_for_bsts_es_suicide_male)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_all_male <- scale_max_min_vector_inverse(
@@ -1006,7 +1371,7 @@ model_selection_es_model_4_male <- future_map_dfr(iterations, function(iter) {
                                                      newdata = test_for_bsts_es_suicide_male,
                                                      niter = iter,
                                                      burn = burn,
-                                                     seed = 42)$mean
+                                                     seed = 42)$mean[(nrow(test_for_bsts_es_suicide_male)-36+1):(nrow(test_for_bsts_es_suicide_male)-24)]
       
       # Inverse scale transformation
       pre_bsts_es_suicide_rate_spike_slab_male <- scale_max_min_vector_inverse(
@@ -1190,6 +1555,7 @@ burn_in_percentages <- c(0.1, 0.20, 0.30, 0.40)
 # Set up parallel processing using furrr
 plan(multisession, workers = detectCores() - 1)
 
+?bst
 # Perform grid search using parallel execution
 model_selection_es_model_2_female <- future_map_dfr(iterations, function(iter) {
   future_map_dfr(burn_in_percentages, function(burn_percent) {
@@ -1211,7 +1577,7 @@ model_selection_es_model_2_female <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )$mean[(nrow(test_for_bsts_es_suicide_female)-36+1):(nrow(test_for_bsts_es_suicide_female)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_sd_female <- scale_max_min_vector_inverse(
@@ -1323,7 +1689,7 @@ model_selection_es_model_3_female <- future_map_dfr(iterations, function(iter) {
       niter = iter,
       burn = burn,
       seed = 42
-    )$mean
+    )$mean[(nrow(test_for_bsts_es_suicide_female)-36+1):(nrow(test_for_bsts_es_suicide_female)-24)]
     
     # Inverse scale transformation
     pre_bsts_es_suicide_rate_tv_all_female <- scale_max_min_vector_inverse(
@@ -1429,7 +1795,7 @@ model_selection_es_model_4_female <- future_map_dfr(iterations, function(iter) {
                                                        newdata = test_for_bsts_es_suicide_female,
                                                        niter = iter,
                                                        burn = burn,
-                                                       seed = 42)$mean
+                                                       seed = 42)$mean[(nrow(test_for_bsts_es_suicide_female)-36+1):(nrow(test_for_bsts_es_suicide_female)-24)]
       
       # Inverse scale transformation
       pre_bsts_es_suicide_rate_spike_slab_female <- scale_max_min_vector_inverse(
@@ -1832,4 +2198,861 @@ p_cumu_ae_es_female <- ggplot(test_es_suicide_female, aes(x = term)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
 plot(p_cumu_ae_es_female)
+
+
+
+# add bzd all -----------------------------------------------------------------
+# Add local level component
+ss_es_suicide_tv_alc_bzd <- AddLocalLevel(state.specification = list(), train_for_bsts_es_suicide_BZD$suicide_rate_total_scaled)
+
+# Add seasonality component (12-month seasonality)
+ss_es_suicide_tv_alc_bzd <- AddSeasonal(ss_es_suicide_tv_alc_bzd, train_for_bsts_es_suicide_BZD$suicide_rate_total_scaled, nseasons = 12)
+
+# Add dynamic regression component using alcohol and BZD queries
+ss_es_suicide_tv_alc_bzd <- AddDynamicRegression(ss_es_suicide_tv_alc_bzd, 
+                                                 formula(suicide_rate_total_scaled ~   query_alcohol_scaled + query_benzodiacepinas_scaled),
+                                                 data = train_for_bsts_es_suicide_BZD)
+
+# Define grid search parameters
+iterations <- c(2000, 4000, 8000, 16000)
+burn_in_percentages <- c(0.1, 0.20, 0.30, 0.40)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+# Perform grid search using parallel execution
+model_selection_es_model_alc_bzd <- future_map_dfr(iterations, function(iter) {
+  future_map_dfr(burn_in_percentages, function(burn_percent) {
+    burn <- round(iter * burn_percent)
+    
+    # Fit the BSTS model
+    model_bsts_es_suicide_tv_alc_bzd <- bsts(
+      formula = suicide_rate_total_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled,
+      state.specification = ss_es_suicide_tv_alc_bzd,
+      niter = iter,
+      family = "gaussian",
+      data = train_for_bsts_es_suicide_BZD,
+      seed = 42
+    )
+    
+    # Make predictions
+    pre_bsts_es_suicide_tv_alc_bzd <- predict(
+      model_bsts_es_suicide_tv_alc_bzd,
+      newdata = test_for_bsts_es_suicide_BZD,
+      niter = iter,
+      burn = burn,
+      seed = 42
+    )$mean
+    
+    # Extract last 12 months of predictions
+    pre_bsts_es_suicide_tv_alc_bzd <- pre_bsts_es_suicide_tv_alc_bzd[(nrow(test_for_bsts_es_suicide_BZD)-36+1):(nrow(test_for_bsts_es_suicide_BZD)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_es_suicide_rate_tv_alc_bzd <- scale_max_min_vector_inverse(
+      pre_bsts_es_suicide_tv_alc_bzd, 
+      min(df_main_es_add_BZD$suicide_rate_total[df_main_es_add_BZD$term <= "2016-12-01"]),
+      max(df_main_es_add_BZD$suicide_rate_total[df_main_es_add_BZD$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_alc_bzd, val_es_suicide_BZD)
+    
+    return(data.frame(
+      iterations = iter,
+      burn_in_percent = burn_percent,
+      burn_in = burn,
+      MAPE = accuracy_results[5],
+      RMSE = accuracy_results[2],
+      MAE = accuracy_results[3]
+    ))
+  })
+})
+
+plan(sequential)
+
+# Find the best model based on MAPE
+best_model_es_suicide_tv_alc_bzd <- model_selection_es_model_alc_bzd[which.min(model_selection_es_model_alc_bzd$MAPE), ]
+
+# Fit the final model
+model_bsts_es_suicide_tv_alc_bzd <- bsts(
+  formula = suicide_rate_total_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled ,
+  state.specification = ss_es_suicide_tv_alc_bzd,
+  niter = best_model_es_suicide_tv_alc_bzd$iterations,
+  family = "gaussian",
+  data = train_for_bsts_es_suicide_BZD,
+  seed = 42
+)
+
+# Plot model components
+plot(model_bsts_es_suicide_tv_alc_bzd, "comp") +
+  title("BSTS Model with Alcohol & BZD Queries")
+
+# Predict suicide rate
+pre_bsts_es_suicide_tv_alc_bzd <- predict(
+  model_bsts_es_suicide_tv_alc_bzd,
+  newdata = test_for_bsts_es_suicide_BZD,
+  niter = best_model_es_suicide_tv_alc_bzd$iterations,
+  burn = best_model_es_suicide_tv_alc_bzd$burn_in,
+  seed = 42
+)$mean
+
+# Inverse scale transformation
+pre_bsts_es_suicide_rate_tv_alc_bzd <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_alc_bzd, 
+  min(df_main_es_add_BZD$suicide_rate_total[df_main_es_add_BZD$term <= "2016-12-01"]),
+  max(df_main_es_add_BZD$suicide_rate_total[df_main_es_add_BZD$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide$pre_rate_model_alc_bzd <- pre_bsts_es_suicide_rate_tv_alc_bzd[(nrow(test_for_bsts_es_suicide_BZD)-24+1):nrow(test_for_bsts_es_suicide_BZD)]
+test_es_suicide$pre_num_model_alc_bzd <- (test_es_suicide$pre_rate_model_alc_bzd * test_es_suicide$pop) / 100000
+
+# Evaluate accuracy of predictions
+print(accuracy(test_es_suicide$pre_rate_model_alc_bzd, test_es_suicide$true_rate))
+print(accuracy(test_es_suicide$pre_num_model_alc_bzd, test_es_suicide$true_num))
+
+
+p_pre_accu_es_BZD <- ggplot(test_es_suicide, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_2, color = "Optimal Model First Validations", group = "Optimal Model First Validations"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y = pre_num_model_alc_bzd, color = "Alcohol + BZD", group = "Alcohol + BZD"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Total)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = ""
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Optimal Model First Validations" = "purple", 
+                                "Alcohol + BZD" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 12)  # 凡例のフォントサイズ調整
+  )
+
+p_pre_accu_es_BZD
+
+
+
+
+# add BZD male --------------------------------------------------------------------
+# Add local level component
+ss_es_suicide_tv_alc_bzd_male <- AddLocalLevel(state.specification = list(), train_for_bsts_es_suicide_male_BZD$suicide_rate_male_scaled)
+
+# Add seasonality component (12-month seasonality)
+ss_es_suicide_tv_alc_bzd_male <- AddSeasonal(ss_es_suicide_tv_alc_bzd_male, train_for_bsts_es_suicide_male_BZD$suicide_rate_male_scaled, nseasons = 12)
+
+# Add dynamic regression component using alcohol and BZD queries
+ss_es_suicide_tv_alc_bzd_male <- AddDynamicRegression(ss_es_suicide_tv_alc_bzd_male, 
+                                                      formula(suicide_rate_male_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled),
+                                                      data = train_for_bsts_es_suicide_male_BZD)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+# Perform grid search using parallel execution
+model_selection_es_model_alc_bzd_male <- future_map_dfr(iterations, function(iter) {
+  future_map_dfr(burn_in_percentages, function(burn_percent) {
+    burn <- round(iter * burn_percent)
+    
+    # Fit the BSTS model
+    model_bsts_es_suicide_tv_alc_bzd_male <- bsts(
+      formula = suicide_rate_male_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled,
+      state.specification = ss_es_suicide_tv_alc_bzd_male,
+      niter = iter,
+      family = "gaussian",
+      data = train_for_bsts_es_suicide_male_BZD,
+      seed = 42
+    )
+    
+    # Make predictions
+    pre_bsts_es_suicide_tv_alc_bzd_male <- predict(
+      model_bsts_es_suicide_tv_alc_bzd_male,
+      newdata = test_for_bsts_es_suicide_male_BZD,
+      niter = iter,
+      burn = burn,
+      seed = 42
+    )$mean
+    
+    # Extract last 12 months of predictions
+    pre_bsts_es_suicide_tv_alc_bzd_male <- pre_bsts_es_suicide_tv_alc_bzd_male[(nrow(test_for_bsts_es_suicide_male_BZD)-36+1):(nrow(test_for_bsts_es_suicide_male_BZD)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_es_suicide_rate_tv_alc_bzd_male <- scale_max_min_vector_inverse(
+      pre_bsts_es_suicide_tv_alc_bzd_male, 
+      min(df_main_es_add_BZD$suicide_rate_male[df_main_es_add_BZD$term <= "2016-12-01"]),
+      max(df_main_es_add_BZD$suicide_rate_male[df_main_es_add_BZD$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_alc_bzd_male, val_es_suicide_male_BZD)
+    
+    return(data.frame(
+      iterations = iter,
+      burn_in_percent = burn_percent,
+      burn_in = burn,
+      MAPE = accuracy_results[5],
+      RMSE = accuracy_results[2],
+      MAE = accuracy_results[3]
+    ))
+  })
+})
+
+
+plan(sequential)
+# Fit the final model
+best_model_es_suicide_tv_alc_bzd_male <- model_selection_es_model_alc_bzd_male[which.min(model_selection_es_model_alc_bzd_male$MAPE), ]
+
+model_bsts_es_suicide_tv_alc_bzd_male <- bsts(
+  formula = suicide_rate_male_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled,
+  state.specification = ss_es_suicide_tv_alc_bzd_male,
+  niter = best_model_es_suicide_tv_alc_bzd_male$iterations,
+  family = "gaussian",
+  data = train_for_bsts_es_suicide_male_BZD,
+  seed = 42
+)
+
+# Predict and transform
+pre_bsts_es_suicide_tv_alc_bzd_male <- predict(
+  model_bsts_es_suicide_tv_alc_bzd_male,
+  newdata = test_for_bsts_es_suicide_male_BZD,
+  niter = best_model_es_suicide_tv_alc_bzd_male$iterations,
+  burn = best_model_es_suicide_tv_alc_bzd_male$burn_in,
+  seed = 42
+)$mean
+
+# Inverse scale transformation
+pre_bsts_es_suicide_rate_tv_alc_bzd_male <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_alc_bzd_male, 
+  min(df_main_es_add_BZD$suicide_rate_male[df_main_es_add_BZD$term <= "2016-12-01"]),
+  max(df_main_es_add_BZD$suicide_rate_male[df_main_es_add_BZD$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide_male$pre_rate_model_alc_bzd_male <- pre_bsts_es_suicide_rate_tv_alc_bzd_male[(nrow(test_for_bsts_es_suicide_male_BZD)-24+1):nrow(test_for_bsts_es_suicide_male_BZD)]
+test_es_suicide_male$pre_num_model_alc_bzd_male <- (test_es_suicide_male$pre_rate_model_alc_bzd_male * test_es_suicide_male$pop) / 100000
+
+# Evaluate accuracy of predictions
+print(accuracy(test_es_suicide_male$pre_rate_model_alc_bzd_male, test_es_suicide_male$true_rate))
+print(accuracy(test_es_suicide_male$pre_num_model_alc_bzd_male, test_es_suicide_male$true_num))
+test_es_suicide_male %>% names()
+p_pre_accu_es_BZD_male <- ggplot(test_es_suicide_male, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_2_male, color = "Optimal Model First Validations", group = "Optimal Model First Validations"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y = pre_num_model_alc_bzd_male, color = "Alcohol + BZD", group = "Alcohol + BZD"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Male)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = ""
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Optimal Model First Validations" = "purple", 
+                                "Alcohol + BZD" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 12)  # 凡例のフォントサイズ調整
+  )
+
+p_pre_accu_es_BZD_male
+
+
+# add BZD female ----------------------------------------------------------
+# Add local level component
+ss_es_suicide_tv_alc_bzd_female <- AddLocalLevel(state.specification = list(), train_for_bsts_es_suicide_female_BZD$suicide_rate_female_scaled)
+
+# Add seasonality component (12-month seasonality)
+ss_es_suicide_tv_alc_bzd_female <- AddSeasonal(ss_es_suicide_tv_alc_bzd_female, train_for_bsts_es_suicide_female_BZD$suicide_rate_female_scaled, nseasons = 12)
+
+# Add dynamic regression component using alcohol and BZD queries
+ss_es_suicide_tv_alc_bzd_female <- AddDynamicRegression(ss_es_suicide_tv_alc_bzd_female, 
+                                                        formula(suicide_rate_female_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled),
+                                                        data = train_for_bsts_es_suicide_female_BZD)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+# Perform grid search using parallel execution
+model_selection_es_model_alc_bzd_female <- future_map_dfr(iterations, function(iter) {
+  future_map_dfr(burn_in_percentages, function(burn_percent) {
+    burn <- round(iter * burn_percent)
+    
+    # Fit the BSTS model
+    model_bsts_es_suicide_tv_alc_bzd_female <- bsts(
+      formula = suicide_rate_female_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled,
+      state.specification = ss_es_suicide_tv_alc_bzd_female,
+      niter = iter,
+      family = "gaussian",
+      data = train_for_bsts_es_suicide_female_BZD,
+      seed = 42
+    )
+    
+    # Make predictions
+    pre_bsts_es_suicide_tv_alc_bzd_female <- predict(
+      model_bsts_es_suicide_tv_alc_bzd_female,
+      newdata = test_for_bsts_es_suicide_female_BZD,
+      niter = iter,
+      burn = burn,
+      seed = 42
+    )$mean
+    
+    # Extract last 12 months of predictions
+    pre_bsts_es_suicide_tv_alc_bzd_female <- pre_bsts_es_suicide_tv_alc_bzd_female[(nrow(test_for_bsts_es_suicide_female_BZD)-36+1):(nrow(test_for_bsts_es_suicide_female_BZD)-24)]
+    
+    # Inverse scale transformation
+    pre_bsts_es_suicide_rate_tv_alc_bzd_female <- scale_max_min_vector_inverse(
+      pre_bsts_es_suicide_tv_alc_bzd_female, 
+      min(df_main_es_add_BZD$suicide_rate_female[df_main_es_add_BZD$term <= "2016-12-01"]),
+      max(df_main_es_add_BZD$suicide_rate_female[df_main_es_add_BZD$term <= "2016-12-01"])
+    )
+    
+    # Calculate accuracy metrics
+    accuracy_results <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_alc_bzd_female, val_es_suicide_female_BZD)
+    
+    return(data.frame(
+      iterations = iter,
+      burn_in_percent = burn_percent,
+      burn_in = burn,
+      MAPE = accuracy_results[5],
+      RMSE = accuracy_results[2],
+      MAE = accuracy_results[3]
+    ))
+  })
+})
+
+plan(sequential)
+
+# Fit the final model
+best_model_es_suicide_tv_alc_bzd_female <- model_selection_es_model_alc_bzd_female[which.min(model_selection_es_model_alc_bzd_female$MAPE), ]
+
+model_bsts_es_suicide_tv_alc_bzd_female <- bsts(
+  formula = suicide_rate_female_scaled ~ query_alcohol_scaled + query_benzodiacepinas_scaled,
+  state.specification = ss_es_suicide_tv_alc_bzd_female,
+  niter = best_model_es_suicide_tv_alc_bzd_female$iterations,
+  family = "gaussian",
+  data = train_for_bsts_es_suicide_female_BZD,
+  seed = 42
+)
+
+# Predict and transform
+pre_bsts_es_suicide_tv_alc_bzd_female <- predict(
+  model_bsts_es_suicide_tv_alc_bzd_female,
+  newdata = test_for_bsts_es_suicide_female_BZD,
+  niter = best_model_es_suicide_tv_alc_bzd_female$iterations,
+  burn = best_model_es_suicide_tv_alc_bzd_female$burn_in,
+  seed = 42
+)$mean
+
+# Inverse scale transformation
+pre_bsts_es_suicide_rate_tv_alc_bzd_female <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_alc_bzd_female, 
+  min(df_main_es_add_BZD$suicide_rate_female[df_main_es_add_BZD$term <= "2016-12-01"]),
+  max(df_main_es_add_BZD$suicide_rate_female[df_main_es_add_BZD$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide_female$pre_rate_model_alc_bzd_female <- pre_bsts_es_suicide_rate_tv_alc_bzd_female[(nrow(test_for_bsts_es_suicide_female_BZD)-24+1):nrow(test_for_bsts_es_suicide_female_BZD)]
+test_es_suicide_female$pre_num_model_alc_bzd_female <- (test_es_suicide_female$pre_rate_model_alc_bzd_female * test_es_suicide_female$pop) / 100000
+
+# Evaluate accuracy of predictions
+print(accuracy(test_es_suicide_female$pre_rate_model_alc_bzd_female, test_es_suicide_female$true_rate))
+print(accuracy(test_es_suicide_female$pre_num_model_alc_bzd_female, test_es_suicide_female$true_num))
+
+
+p_pre_accu_es_BZD_female <- ggplot(test_es_suicide_female, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_1_female, color = "Optimal Model First Validations", group = "Optimal Model First Validations"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y = pre_num_model_alc_bzd_female, color = "Alcohol + BZD", group = "Alcohol + BZD"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = ""
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Optimal Model First Validations" = "purple", 
+                                "Alcohol + BZD" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 12)  # 凡例のフォントサイズ調整
+  )
+
+p_pre_accu_es_BZD_female
+
+
+#combined plot
+p_combined <- p_pre_accu_es_BZD | p_pre_accu_es_BZD_male | p_pre_accu_es_BZD_female
+p_combined
+
+# season grid all ---------------------------------------------------------
+# Define grid search parameters
+iterations_nsea <- c(2000, 4000, 8000, 16000)
+burn_in_percentages_nsea <- c(0.1, 0.20, 0.30, 0.40)
+n_seasonal_nsea <- c(2,4,6,12)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+
+# Perform grid search including n_seasonal using parallel execution
+model_selection_es_model_nsea <- future_map_dfr(iterations_nsea, function(iter) {
+  future_map_dfr(burn_in_percentages_nsea, function(burn_percent) {
+    future_map_dfr(n_seasonal_nsea, function(nsea) {
+      burn_nsea <- round(iter * burn_percent)
+      season_duration_nsea <- 12/ nsea
+      
+      # Define state space model with varying seasonality
+      ss_es_suicide_tv_sd_nsea <- AddLocalLevel(state.specification = list(), 
+                                                train_for_bsts_es_suicide$suicide_rate_total_scaled)
+      ss_es_suicide_tv_sd_nsea <- AddSeasonal(ss_es_suicide_tv_sd_nsea, 
+                                              train_for_bsts_es_suicide$suicide_rate_total_scaled, 
+                                              nseasons = nsea, 
+                                              season.duration = season_duration_nsea)
+      ss_es_suicide_tv_sd_nsea <- AddDynamicRegression(ss_es_suicide_tv_sd_nsea, 
+                                                       formula(suicide_rate_total_scaled ~ 
+                                                                 query_suicide_scaled + query_depression_scaled),
+                                                       data = train_for_bsts_es_suicide)
+      
+      # Fit the model
+      model_bsts_es_suicide_tv_sd_nsea <- bsts(
+        formula = train_for_bsts_es_suicide$suicide_rate_total_scaled,
+        state.specification = ss_es_suicide_tv_sd_nsea,
+        niter = iter,
+        family = "gaussian",
+        seed = 42
+      )
+      
+      # Make predictions
+      pre_bsts_es_suicide_tv_sd_nsea <- predict(
+        model_bsts_es_suicide_tv_sd_nsea,
+        newdata = test_for_bsts_es_suicide,
+        niter = iter,
+        burn = burn_nsea,
+        seed = 42
+      )
+      
+      # Extract predicted values
+      pre_bsts_es_suicide_tv_sd_nsea <- pre_bsts_es_suicide_tv_sd_nsea$mean[(nrow(test_for_bsts_es_suicide)-36+1):(nrow(test_for_bsts_es_suicide)-24)]
+      
+      # Inverse scale transformation
+      pre_bsts_es_suicide_rate_tv_sd_nsea <- scale_max_min_vector_inverse(
+        pre_bsts_es_suicide_tv_sd_nsea, 
+        min(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"]),
+        max(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics
+      accuracy_results_nsea <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_sd_nsea, val_es_suicide)
+      
+      return(data.frame(
+        iterations = iter,
+        burn_in_percent = burn_percent,
+        burn_in = burn_nsea,
+        n_seasonal = nsea,
+        season_duration = season_duration_nsea,
+        MAPE = accuracy_results_nsea[5],
+        RMSE = accuracy_results_nsea[2],
+        MAE = accuracy_results_nsea[3]
+      ))
+    })
+  })
+})
+
+plan(sequential)
+
+# Find the best model based on MAPE
+best_model_es_suicide_tv_sd_nsea <- model_selection_es_model_nsea[which.min(model_selection_es_model_nsea$MAPE), ]
+
+# Fit the final model with the best parameters
+ss_es_suicide_tv_sd_best_nsea <- AddLocalLevel(state.specification = list(), 
+                                               train_for_bsts_es_suicide$suicide_rate_total_scaled)
+ss_es_suicide_tv_sd_best_nsea <- AddSeasonal(ss_es_suicide_tv_sd_best_nsea, 
+                                             train_for_bsts_es_suicide$suicide_rate_total_scaled, 
+                                             nseasons = best_model_es_suicide_tv_sd_nsea$n_seasonal, 
+                                             season.duration = best_model_es_suicide_tv_sd_nsea$season_duration)
+ss_es_suicide_tv_sd_best_nsea <- AddDynamicRegression(ss_es_suicide_tv_sd_best_nsea, 
+                                                      formula(suicide_rate_total_scaled ~ 
+                                                                query_suicide_scaled + query_depression_scaled),
+                                                      data = train_for_bsts_es_suicide)
+
+model_bsts_es_suicide_tv_sd_best_nsea <- bsts(
+  formula = train_for_bsts_es_suicide$suicide_rate_total_scaled,
+  state.specification = ss_es_suicide_tv_sd_best_nsea,
+  niter = best_model_es_suicide_tv_sd_nsea$iterations,
+  family = "gaussian",
+  seed = 42
+)
+
+# Plot components
+plot(model_bsts_es_suicide_tv_sd_best_nsea, "comp") +
+  title("Best ES Model with Seasonality")
+
+# Predict suicide rate
+pre_bsts_es_suicide_tv_sd_best_nsea <- predict(
+  model_bsts_es_suicide_tv_sd_best_nsea,
+  newdata = test_for_bsts_es_suicide,
+  niter = best_model_es_suicide_tv_sd_nsea$iterations,
+  burn = best_model_es_suicide_tv_sd_nsea$burn_in,
+  seed = 42
+)$mean
+
+pre_bsts_es_suicide_rate_tv_sd_best_nsea <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_sd_best_nsea, 
+  min(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"]), 
+  max(df_main_es$suicide_rate_total[df_main_es$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide$pre_rate_model_best_nsea <- pre_bsts_es_suicide_rate_tv_sd_best_nsea[(nrow(test_for_bsts_es_suicide)-24+1):nrow(test_for_bsts_es_suicide)]
+test_es_suicide$pre_num_model_best_nsea <- (test_es_suicide$pre_rate_model_best_nsea * test_es_suicide$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_es_suicide$pre_rate_model_best_nsea, test_es_suicide$true_rate))
+print(accuracy(test_es_suicide$pre_num_model_best_nsea, test_es_suicide$true_num))
+
+
+
+
+
+p_pre_accu_n_seas <- ggplot(test_es_suicide, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_2, color = "Seasonal 12-season in year", group = "Seasonal 12-season in year"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y = pre_num_model_best_nsea, color = "Seasonal 6-season in year", group = "Seasonal 6-season in year"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Total)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = "Seasonality Model"
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Seasonal 12-season in year" = "purple", 
+                                "Seasonal 6-season in year" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 0.5),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 12, face = "bold")
+  )
+
+p_pre_accu_n_seas
+
+
+
+# season grid male --------------------------------------------------------
+# Define grid search parameters
+iterations_nsea <- c(2000, 4000, 8000, 16000)
+burn_in_percentages_nsea <- c(0.1, 0.20, 0.30, 0.40)
+n_seasonal_nsea <- c(2,4,6,12)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+# Perform grid search including n_seasonal using parallel execution for male model
+model_selection_es_model_nsea_male <- future_map_dfr(iterations_nsea, function(iter) {
+  future_map_dfr(burn_in_percentages_nsea, function(burn_percent) {
+    future_map_dfr(n_seasonal_nsea, function(nsea) {
+      burn_nsea <- round(iter * burn_percent)
+      season_duration_nsea <- floor(12 / nsea)
+      
+      # Define state space model with varying seasonality for male
+      ss_es_suicide_tv_sd_nsea_male <- AddLocalLevel(state.specification = list(), 
+                                                     train_for_bsts_es_suicide_male$suicide_rate_male_scaled)
+      ss_es_suicide_tv_sd_nsea_male <- AddSeasonal(ss_es_suicide_tv_sd_nsea_male, 
+                                                   train_for_bsts_es_suicide_male$suicide_rate_male_scaled, 
+                                                   nseasons = nsea, 
+                                                   season.duration = season_duration_nsea)
+      ss_es_suicide_tv_sd_nsea_male <- AddDynamicRegression(ss_es_suicide_tv_sd_nsea_male, 
+                                                            formula(suicide_rate_male_scaled ~ 
+                                                                      query_suicide_scaled + query_depression_scaled),
+                                                            data = train_for_bsts_es_suicide_male)
+      
+      # Fit the model for male
+      model_bsts_es_suicide_tv_sd_nsea_male <- bsts(
+        formula = train_for_bsts_es_suicide_male$suicide_rate_male_scaled,
+        state.specification = ss_es_suicide_tv_sd_nsea_male,
+        niter = iter,
+        family = "gaussian",
+        seed = 42
+      )
+      
+      # Make predictions for male
+      pre_bsts_es_suicide_tv_sd_nsea_male <- predict(
+        model_bsts_es_suicide_tv_sd_nsea_male,
+        newdata = test_for_bsts_es_suicide_male,
+        niter = iter,
+        burn = burn_nsea,
+        seed = 42
+      )$mean[(nrow(test_for_bsts_es_suicide_male)-36+1):(nrow(test_for_bsts_es_suicide_male)-24)]
+      
+      # Inverse scale transformation for male
+      pre_bsts_es_suicide_rate_tv_sd_nsea_male <- scale_max_min_vector_inverse(
+        pre_bsts_es_suicide_tv_sd_nsea_male, 
+        min(df_main_es$suicide_rate_male[df_main_es$term <= "2016-12-01"]),
+        max(df_main_es$suicide_rate_male[df_main_es$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics for male
+      accuracy_results_nsea_male <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_sd_nsea_male, val_es_suicide_male)
+      
+      return(data.frame(
+        gender = "male",
+        iterations = iter,
+        burn_in_percent = burn_percent,
+        burn_in = burn_nsea,
+        n_seasonal = nsea,
+        season_duration = season_duration_nsea,
+        MAPE = accuracy_results_nsea_male[5],
+        RMSE = accuracy_results_nsea_male[2],
+        MAE = accuracy_results_nsea_male[3]
+      ))
+    })
+  })
+})
+
+plan(sequential)
+
+# Find the best model based on MAPE
+best_model_es_suicide_tv_sd_nsea_male <- model_selection_es_model_nsea_male[which.min(model_selection_es_model_nsea_male$MAPE), ]
+
+# Fit the final model with the best parameters
+ss_es_suicide_tv_sd_best_nsea_male <- AddLocalLevel(state.specification = list(), 
+                                                    train_for_bsts_es_suicide_male$suicide_rate_male_scaled)
+ss_es_suicide_tv_sd_best_nsea_male <- AddSeasonal(ss_es_suicide_tv_sd_best_nsea_male, 
+                                                  train_for_bsts_es_suicide_male$suicide_rate_male_scaled, 
+                                                  nseasons = best_model_es_suicide_tv_sd_nsea_male$n_seasonal, 
+                                                  season.duration = best_model_es_suicide_tv_sd_nsea_male$season_duration)
+ss_es_suicide_tv_sd_best_nsea_male <- AddDynamicRegression(ss_es_suicide_tv_sd_best_nsea_male, 
+                                                           formula(suicide_rate_male_scaled ~ 
+                                                                     query_suicide_scaled + query_depression_scaled),
+                                                           data = train_for_bsts_es_suicide_male)
+
+model_bsts_es_suicide_tv_sd_best_nsea_male <- bsts(
+  formula = train_for_bsts_es_suicide_male$suicide_rate_male_scaled,
+  state.specification = ss_es_suicide_tv_sd_best_nsea_male,
+  niter = best_model_es_suicide_tv_sd_nsea_male$iterations,
+  family = "gaussian",
+  seed = 42
+)
+
+# Predict suicide rate
+pre_bsts_es_suicide_tv_sd_best_nsea_male <- predict(
+  model_bsts_es_suicide_tv_sd_best_nsea_male,
+  newdata = test_for_bsts_es_suicide_male,
+  niter = best_model_es_suicide_tv_sd_nsea_male$iterations,
+  burn = best_model_es_suicide_tv_sd_nsea_male$burn_in,
+  seed = 42
+)$mean
+
+pre_bsts_es_suicide_rate_tv_sd_best_nsea_male <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_sd_best_nsea_male, 
+  min(df_main_es$suicide_rate_male[df_main_es$term <= "2016-12-01"]), 
+  max(df_main_es$suicide_rate_male[df_main_es$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide_male$pre_rate_model_best_nsea <- pre_bsts_es_suicide_rate_tv_sd_best_nsea_male[(nrow(test_for_bsts_es_suicide_male)-24+1):nrow(test_for_bsts_es_suicide_male)]
+test_es_suicide_male$pre_num_model_best_nsea <- (test_es_suicide_male$pre_rate_model_best_nsea * test_es_suicide_male$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_es_suicide_male$pre_rate_model_best_nsea, test_es_suicide_male$true_rate))
+print(accuracy(test_es_suicide_male$pre_num_model_best_nsea, test_es_suicide_male$true_num))
+
+p_pre_accu_n_seas_male <- ggplot(test_es_suicide_male, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_2_male, color = "Seasonal 12-season in year", group = "Seasonal 12-season in year"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y =pre_num_model_best_nsea, color = "Seasonal 6-season in year", group = "Seasonal 6-season in year"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Male)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = "Seasonality Model"
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Seasonal 12-season in year" = "purple", 
+                                "Seasonal 6-season in year" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 0.5),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 12, face = "bold")
+  )
+
+
+# season grid female ------------------------------------------------------
+# Define grid search parameters
+iterations_nsea <- c(2000, 4000, 8000, 16000)
+burn_in_percentages_nsea <- c(0.1, 0.20, 0.30, 0.40)
+n_seasonal_nsea <- c(2,4,6,12)
+
+# Set up parallel processing using furrr
+plan(multisession, workers = detectCores() - 1)
+
+# Perform grid search including n_seasonal using parallel execution for female model
+model_selection_es_model_nsea_female <- future_map_dfr(iterations_nsea, function(iter) {
+  future_map_dfr(burn_in_percentages_nsea, function(burn_percent) {
+    future_map_dfr(n_seasonal_nsea, function(nsea) {
+      burn_nsea <- round(iter * burn_percent)
+      season_duration_nsea <- floor(12 / nsea)
+      
+      # Define state space model with varying seasonality for female
+      ss_es_suicide_tv_sd_nsea_female <- AddLocalLevel(state.specification = list(), 
+                                                       train_for_bsts_es_suicide_female$suicide_rate_female_scaled)
+      ss_es_suicide_tv_sd_nsea_female <- AddSeasonal(ss_es_suicide_tv_sd_nsea_female, 
+                                                     train_for_bsts_es_suicide_female$suicide_rate_female_scaled, 
+                                                     nseasons = nsea, 
+                                                     season.duration = season_duration_nsea)
+      
+      # Fit the model for female
+      model_bsts_es_suicide_tv_sd_nsea_female <- bsts(
+        formula = train_for_bsts_es_suicide_female$suicide_rate_female_scaled,
+        state.specification = ss_es_suicide_tv_sd_nsea_female,
+        niter = iter,
+        family = "gaussian",
+        seed = 42
+      )
+      
+      # Make predictions for female
+      pre_bsts_es_suicide_tv_sd_nsea_female <- predict(
+        model_bsts_es_suicide_tv_sd_nsea_female,
+        newdata = test_for_bsts_es_suicide_female,
+        horizon = 12,
+        niter = iter,
+        burn = burn_nsea,
+        seed = 42
+      )$mean
+      
+      # Inverse scale transformation for female
+      pre_bsts_es_suicide_rate_tv_sd_nsea_female <- scale_max_min_vector_inverse(
+        pre_bsts_es_suicide_tv_sd_nsea_female, 
+        min(df_main_es$suicide_rate_female[df_main_es$term <= "2016-12-01"]),
+        max(df_main_es$suicide_rate_female[df_main_es$term <= "2016-12-01"])
+      )
+      
+      # Calculate accuracy metrics for female
+      accuracy_results_nsea_female <- forecast::accuracy(pre_bsts_es_suicide_rate_tv_sd_nsea_female, val_es_suicide_female)
+      
+      return(data.frame(
+        gender = "female",
+        iterations = iter,
+        burn_in_percent = burn_percent,
+        burn_in = burn_nsea,
+        n_seasonal = nsea,
+        season_duration = season_duration_nsea,
+        MAPE = accuracy_results_nsea_female[5],
+        RMSE = accuracy_results_nsea_female[2],
+        MAE = accuracy_results_nsea_female[3]
+      ))
+    })
+  })
+})
+
+plan(sequential)
+
+# Find the best model based on MAPE
+best_model_es_suicide_tv_sd_nsea_female <- model_selection_es_model_nsea_female[which.min(model_selection_es_model_nsea_female$MAPE), ]
+
+
+
+# Fit the final model with the best parameters
+ss_es_suicide_tv_sd_best_nsea_female <- AddLocalLevel(state.specification = list(), 
+                                                      train_for_bsts_es_suicide_female$suicide_rate_female_scaled)
+ss_es_suicide_tv_sd_best_nsea_female <- AddSeasonal(ss_es_suicide_tv_sd_best_nsea_female, 
+                                                    train_for_bsts_es_suicide_female$suicide_rate_female_scaled, 
+                                                    nseasons = best_model_es_suicide_tv_sd_nsea_female$n_seasonal, 
+                                                    season.duration = best_model_es_suicide_tv_sd_nsea_female$season_duration)
+
+
+
+# Fit the final model with the best parameters
+model_bsts_es_suicide_tv_sd_best_nsea_female <- bsts(
+  formula = train_for_bsts_es_suicide_female$suicide_rate_female_scaled,
+  state.specification = ss_es_suicide_tv_sd_best_nsea_female,
+  niter = best_model_es_suicide_tv_sd_nsea_female$iterations,
+  family = "gaussian",
+  seed = 42
+)
+
+# Predict suicide rate
+pre_bsts_es_suicide_tv_sd_best_nsea_female <- predict(
+  model_bsts_es_suicide_tv_sd_best_nsea_female,
+  newdata = test_for_bsts_es_suicide_female,
+  horizon = 36,
+  niter = best_model_es_suicide_tv_sd_nsea_female$iterations,
+  burn = best_model_es_suicide_tv_sd_nsea_female$burn_in,
+  seed = 42
+)$mean
+
+pre_bsts_es_suicide_rate_tv_sd_best_nsea_female <- scale_max_min_vector_inverse(
+  pre_bsts_es_suicide_tv_sd_best_nsea_female, 
+  min(df_main_es$suicide_rate_female[df_main_es$term <= "2016-12-01"]), 
+  max(df_main_es$suicide_rate_female[df_main_es$term <= "2016-12-01"])
+)
+
+# Predict suicide rate and number for test set
+test_es_suicide_female$pre_rate_model_best_nsea <- pre_bsts_es_suicide_rate_tv_sd_best_nsea_female[13:length(pre_bsts_es_suicide_rate_tv_sd_best_nsea_female)]
+test_es_suicide_female$pre_num_model_best_nsea <- (test_es_suicide_female$pre_rate_model_best_nsea * test_es_suicide_female$pop) / 100000
+
+# Confirm accuracy for test set
+print(accuracy(test_es_suicide_female$pre_rate_model_best_nsea, test_es_suicide_female$true_rate))
+print(accuracy(test_es_suicide_female$pre_num_model_best_nsea, test_es_suicide_female$true_num))
+
+
+
+p_pre_accu_n_seas_female <- ggplot(test_es_suicide_female, aes(x = term)) +
+  geom_line(aes(y = true_num, color = "TRUE", group = "TRUE"), size = 1) +
+  geom_line(aes(y = pre_num_model_1_female, color = "Seasonal 12-season in year", group = "Seasonal 12-season in year"), 
+            linetype = "dashed", size = 1) +
+  geom_line(aes(y = pre_num_model_best_nsea, color = "Seasonal 6-season in year", group = "Seasonal 6-season in year"), 
+            linetype = "dashed", size = 1) +
+  scale_y_continuous(limits = c(0, NA)) +
+  labs(
+    title = "Predicted Number of Suicides in Spain (Female)",
+    x = "Term (Jan 2018 - Dec 2019)",
+    y = "The Number of Suicides",
+    color = "Seasonality Model"
+  ) +
+  scale_color_manual(values = c("TRUE" = "black", 
+                                "Seasonal 12-season in year" = "purple", 
+                                "Seasonal 6-season in year" = "green")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 0.5),
+    legend.position = "bottom",
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 12, face = "bold")
+  )
+
+p_combined_n_seas <- p_pre_accu_n_seas | p_pre_accu_n_seas_male | p_pre_accu_n_seas_female
+
+
+p_combined_n_seas
+
+
+
 
