@@ -16,36 +16,40 @@ tzcode source: internal
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
- 
 
 other attached packages:
-[1] patchwork_1.2.0     bsts_0.9.10         xts_0.13.2          BoomSpikeSlab_1.2.6 Boom_0.9.15        
-[6] gridExtra_2.3       vars_1.6-0          lmtest_0.9-40       strucchange_1.5-3   sandwich_3.1-0     
-[11] zoo_1.8-12          MASS_7.3-60         tseries_0.10-55     urca_1.3-3          KFAS_1.5.1         
-[16] forecast_8.21.1     lubridate_1.9.3     forcats_1.0.0       stringr_1.5.1       dplyr_1.1.4        
-[21] purrr_1.0.2         readr_2.1.5         tidyr_1.3.0         tibble_3.2.1        ggplot2_3.4.4      
-[26] tidyverse_2.0.0    
+ [1] reshape2_1.4.4      furrr_0.3.1         future_1.34.0       patchwork_1.2.0    
+ [5] bsts_0.9.10         xts_0.13.2          BoomSpikeSlab_1.2.6 Boom_0.9.15        
+ [9] gridExtra_2.3       vars_1.6-0          lmtest_0.9-40       strucchange_1.5-3  
+[13] sandwich_3.1-0      zoo_1.8-12          MASS_7.3-60         tseries_0.10-55    
+[17] urca_1.3-3          KFAS_1.5.1          forecast_8.21.1     lubridate_1.9.3    
+[21] forcats_1.0.0       stringr_1.5.1       dplyr_1.1.4         purrr_1.0.2        
+[25] readr_2.1.5         tidyr_1.3.0         tibble_3.2.1        ggplot2_3.4.4      
+[29] tidyverse_2.0.0    
 
 loaded via a namespace (and not attached):
- [1] utf8_1.2.4        generics_0.1.3    stringi_1.8.3     lattice_0.21-9    hms_1.1.3        
- [6] digest_0.6.34     magrittr_2.0.3    evaluate_0.23     grid_4.3.2        timechange_0.2.0 
-[11] fastmap_1.1.1     nnet_7.3-19       fansi_1.0.6       scales_1.3.0      cli_3.6.2        
-[16] rlang_1.1.3       munsell_0.5.0     withr_2.5.2       yaml_2.3.8        tools_4.3.2      
-[21] parallel_4.3.2    tzdb_0.4.0        colorspace_2.1-0  pacman_0.5.1      curl_5.2.0       
-[26] vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   pkgconfig_2.0.3   pillar_1.9.0     
-[31] gtable_0.3.4      quantmod_0.4.26   glue_1.7.0        Rcpp_1.0.12       xfun_0.41        
-[36] tidyselect_1.2.0  rstudioapi_0.15.0 knitr_1.45        nlme_3.1-163      htmltools_0.5.7  
-[41] rmarkdown_2.25    timeDate_4032.109 fracdiff_1.5-3    compiler_4.3.2    quadprog_1.5-8   
-[46] TTR_0.24.4  
+ [1] gtable_0.3.4      xfun_0.41         lattice_0.21-9    tzdb_0.4.0        quadprog_1.5-8   
+ [6] vctrs_0.6.5       tools_4.3.2       generics_0.1.3    curl_5.2.0        parallel_4.3.2   
+[11] fansi_1.0.6       pacman_0.5.1      pkgconfig_2.0.3   lifecycle_1.0.4   compiler_4.3.2   
+[16] munsell_0.5.0     codetools_0.2-19  htmltools_0.5.7   yaml_2.3.8        pillar_1.9.0     
+[21] parallelly_1.41.0 nlme_3.1-163      fracdiff_1.5-3    tidyselect_1.2.0  digest_0.6.34    
+[26] stringi_1.8.3     listenv_0.9.1     fastmap_1.1.1     grid_4.3.2        colorspace_2.1-0 
+[31] cli_3.6.2         magrittr_2.0.3    utf8_1.2.4        withr_2.5.2       scales_1.3.0     
+[36] timechange_0.2.0  TTR_0.24.4        rmarkdown_2.25    globals_0.16.3    quantmod_0.4.26  
+[41] nnet_7.3-19       timeDate_4032.109 hms_1.1.3         evaluate_0.23     knitr_1.45       
+[46] rlang_1.1.3       Rcpp_1.0.12       glue_1.7.0        rstudioapi_0.15.0 plyr_1.8.9       
+[51] R6_2.5.1             
 """
 
 
 #set up package
 #install.packages("pacman")
-pacman::p_load(tidyverse,forecast,forecast,KFAS,urca,tseries,vars,gridExtra,bsts,patchwork)
+pacman::p_load(tidyverse,forecast,forecast,KFAS,urca,tseries,vars,gridExtra,bsts,patchwork,future,furrr,reshape2)
 
 #set seed
 set.seed(42)
+
+sessionInfo()
 
 # pre processing ----------------------------------------------------------
 #load data
@@ -3707,3 +3711,785 @@ combined_plot_suicide_jp_female <- p_pre_accu_jp_female / p_cumu_ae_jp_female +
 
 # Display the combined plot
 print(combined_plot_suicide_jp_female)
+
+
+
+# Repeated holdout ----------------------------------------------------------------
+# Create threshold_candidate from df_main_us
+# Get the total number of data points
+total_points_us <- length(df_main_us$term)
+# Calculate the index at 70% point
+start_idx_us <- ceiling(total_points_us * 0.70)
+start_date_us <- df_main_us$term[start_idx_us]
+
+
+# Randomly select 20 values from threshold_candidate without replacement
+threshold_candidate_us <- df_main_us$term[df_main_us$term > start_date_us  & df_main_us$term <= "2018-12-01"]
+set.seed(42)
+selected_thresholds_us <- sample(threshold_candidate_us, 20, replace = FALSE)
+
+# Create dates 12 months after each threshold
+selected_thresholds_end_us <- as.Date(selected_thresholds_us) %m+% months(12)
+selected_thresholds_end_us <- as.character(selected_thresholds_end_us)
+
+
+# Create threshold_candidate from df_main_jp
+# Get the total number of data points
+total_points_jp <- length(df_main_jp$term)
+# Calculate the index at 80% point
+start_idx_jp <- ceiling(total_points_jp * 0.80)
+start_date_jp <- df_main_jp$term[start_idx_jp]
+
+# Randomly select 10 values from threshold_candidate without replacement
+threshold_candidate_jp <- df_main_jp$term[df_main_jp$term > start_date_jp & df_main_jp$term <= "2018-12-01"]
+set.seed(42)
+selected_thresholds_jp <- sample(threshold_candidate_jp, 10, replace = FALSE)
+# Create dates 12 months after each threshold
+selected_thresholds_end_jp <- as.Date(selected_thresholds_jp) %m+% months(12)
+selected_thresholds_end_jp <- as.character(selected_thresholds_end_jp)
+
+
+
+# Create replications (rep1-rep20) of df_main_us
+for(rep_num in 1:20) {
+  assign(paste0("df_main_us_rep", rep_num), df_main_us)
+}
+
+# Create replications (rep1-rep10) of df_main_jp
+for(rep_num in 1:10) {
+  assign(paste0("df_main_jp_rep", rep_num), df_main_jp)
+}
+
+# Use different threshold dates for each replication
+# For US replications
+for(rep_num in 1:20) {
+  df_name <- paste0("df_main_us_rep", rep_num)
+  df <- get(df_name)
+  threshold_date <- selected_thresholds_us[rep_num]
+  
+  for(column_name in scale_column_names_us) {
+    scaled_vector <- scale_max_min_vector(df, column_name, threshold_date)
+    new_column_name <- paste(column_name, "scaled", sep = "_")
+    df[[new_column_name]] <- scaled_vector
+  }
+  
+  assign(df_name, df)
+}
+
+# For JP replications
+for(rep_num in 1:10) {
+  df_name <- paste0("df_main_jp_rep", rep_num)
+  df <- get(df_name)
+  threshold_date <- selected_thresholds_jp[rep_num]
+  
+  for(column_name in scale_column_names_jp) {
+    scaled_vector <- scale_max_min_vector(df, column_name, threshold_date)
+    new_column_name <- paste(column_name, "scaled", sep = "_")
+    df[[new_column_name]] <- scaled_vector
+  }
+  
+  assign(df_name, df)
+}
+
+
+# US-All -----------------------------------------------------------------
+# model(2-2) ----------------------------------------------------------------
+# Array to store MAPE values for us_suicide_tv_all
+mape_values_us_suicide_tv_all <- numeric(20)
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:20) {
+  gc()
+  # Get the dataframe name
+  df_us_name <- paste0("df_main_us_rep", rep_num)
+  df_us <- get(df_us_name)
+  threshold_date <- selected_thresholds_us[rep_num]
+  threshold_end <-selected_thresholds_end_us[rep_num]
+  
+  # Create state space model
+  ss_name <- paste0("ss_us_suicide_tv_all_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_us$suicide_rate_total_scaled[df_us$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_us$suicide_rate_total_scaled[df_us$term <= threshold_date], nseasons=12)
+  
+  # Add dynamic regression
+  ss <- AddDynamicRegression(ss,
+                             formula(suicide_rate_total_scaled ~                                                                      
+                                       query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                                    
+                                       query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                                    
+                                       query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                                    
+                                       query_how_to_commit_suicide_scaled +                                                                    
+                                       query_manic_depression_scaled + query_social_welfare_scaled +                                                                    
+                                       query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                                    
+                                       query_suicide_hotline_scaled + query_suicide_help_scaled +                                                                    
+                                       query_severe_depression_scaled + query_suicide_attempt_scaled +                                                                    
+                                       query_insomnia_scaled +                                                                    
+                                       query_headache_scaled + query_suicidal_thoughts_scaled +                                                                    
+                                       query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                                    
+                                       query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                                    
+                                       query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                                    
+                                       query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                                    
+                                       query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                                    
+                                       query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                                    
+                                       query_illicit_drugs_scaled + query_social_benefits_scaled +                                                                    
+                                       query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                                    
+                                       query_domestic_violence_scaled + query_hypnotics_scaled +                                                                    
+                                       query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                                    
+                                       query_suicide_prevention_scaled + query_lawsuit_scaled +                                                                    
+                                       query_alcohol_abstinence_scaled + query_religious_belief_scaled),                                         
+                             data = df_us %>% filter(term <= threshold_date))
+  
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_us_suicide_tv_all_rep", rep_num)
+  assign(model_name, bsts(formula = df_us$suicide_rate_total_scaled[df_us$term <= threshold_date],
+                          state.specification = ss,
+                          niter = 5000,
+                          family = "gaussian",
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_us_suicide_tv_all_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_us,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_us[[paste0("pre_bsts_us_suicide_tv_all_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_us[[paste0("pre_bsts_us_suicide_tv_all_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_us[[paste0("pre_bsts_us_suicide_tv_all_rep", rep_num)]], 
+    min(df_us$suicide_rate_total[df_us$term <= threshold_date]),
+    max(df_us$suicide_rate_total[df_us$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_us_suicide_tv_all_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_us[[paste0("pre_bsts_us_suicide_tv_all_rep", rep_num)]][df_us$term > threshold_date & df_us$term <= threshold_end], 
+    df_us$suicide_rate_total[df_us$term > threshold_date & df_us$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_us_suicide_tv_all[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_us_name, df_us)
+}
+plan(sequential)
+
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_us_suicide_tv_all <- data.frame(
+  replication = 1:20,
+  val_start =selected_thresholds_us%m+% months(1),
+  mape = mape_values_us_suicide_tv_all
+)
+
+# model(3) ----------------------------------------------------------------
+# Array to store MAPE values for us_suicide_spike_slab
+mape_values_us_suicide_spike_slab <- numeric(20)
+n_param_us <- 51
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:20) {
+  gc()
+  # Get the dataframe name
+  df_us_name <- paste0("df_main_us_rep", rep_num)
+  df_us <- get(df_us_name)
+  threshold_date <- selected_thresholds_us[rep_num]
+  threshold_end <- selected_thresholds_end_us[rep_num]
+  # Create state space model
+  ss_name <- paste0("ss_us_suicide_spike_slab_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_us$suicide_rate_total_scaled[df_us$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_us$suicide_rate_total_scaled[df_us$term <= threshold_date], nseasons=12)
+  
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_us_suicide_spike_slab_rep", rep_num)
+  assign(model_name, bsts(formula_us,
+                          data = df_us %>% filter(term <= threshold_date), 
+                          state.specification =  ss, 
+                          niter = 5000,
+                          expected.model.size = n_param_us*0.1, 
+                          family = "gaussian", 
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_us_suicide_spike_slab_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_us,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_us[[paste0("pre_bsts_us_suicide_spike_slab_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_us[[paste0("pre_bsts_us_suicide_spike_slab_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_us[[paste0("pre_bsts_us_suicide_spike_slab_rep", rep_num)]], 
+    min(df_us$suicide_rate_total[df_us$term <= threshold_date]),
+    max(df_us$suicide_rate_total[df_us$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_us_suicide_spike_slab_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_us[[paste0("pre_bsts_us_suicide_spike_slab_rep", rep_num)]][df_us$term > threshold_date & df_us$term <= threshold_end], 
+    df_us$suicide_rate_total[df_us$term > threshold_date & df_us$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_us_suicide_spike_slab[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_us_name, df_us)
+}
+plan(sequential)
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_us_suicide_spike_slab <- data.frame(
+  replication = 1:20,
+  val_start =selected_thresholds_us%m+% months(1),
+  mape = mape_values_us_suicide_spike_slab
+)
+
+# Compara US-All ----------------------------------------------------------
+# Create improved summary dataframes with proper validation periods
+mape_summary_us_suicide_tv_all <- data.frame(
+  replication = 1:20,
+  val_start = as.character(as.Date(selected_thresholds_us) %m+% months(1)),
+  val_end = as.character(as.Date(selected_thresholds_end_us)),
+  mape_model2_2 = mape_values_us_suicide_tv_all
+)
+
+round(mean(mape_summary_us_suicide_tv_all$mape_model2_2),digits = 2)
+
+mape_summary_us_suicide_spike_slab <- data.frame(
+  replication = 1:20,
+  val_start = as.character(as.Date(selected_thresholds_us) %m+% months(1)),
+  val_end = as.character(as.Date(selected_thresholds_end_us)),
+  mape_model3 = mape_values_us_suicide_spike_slab
+)
+
+round(mean(mape_summary_us_suicide_spike_slab$mape_model3),digits = 2)
+
+# Combine the dataframes horizontally with a left join
+mape_comparison_us_suicide <- merge(
+  mape_summary_us_suicide_tv_all,
+  mape_summary_us_suicide_spike_slab,
+  by = c("replication", "val_start", "val_end")
+)
+
+# Sort by replication in ascending order
+mape_comparison_us_suicide <- mape_comparison_us_suicide[order(mape_comparison_us_suicide$replication), ]
+
+# Convert from wide to long format
+mape_comparison_long <- melt(mape_comparison_us_suicide, 
+                             id.vars = c("replication", "val_start", "val_end"),
+                             measure.vars = c("mape_model2_2", "mape_model3"),
+                             variable.name = "model", 
+                             value.name = "MAPE")
+
+# Rename factor levels for better labels
+mape_comparison_long$model <- factor(mape_comparison_long$model, 
+                                     levels = c("mape_model2_2", "mape_model3"),
+                                     labels = c("Model (2-2)", "Model (3)"))
+
+
+# Create the boxplot
+p_rep_mape_us <- ggplot(mape_comparison_long, aes(x = model, y = MAPE, fill = model)) +
+  stat_summary(fun = mean, geom = "bar", alpha = 0.7, width = 0.6) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  geom_jitter(position = position_jitter(width = 0.15), alpha = 0.5) +
+  scale_fill_manual(values = c("#3498db", "#e74c3c")) +
+  theme_minimal() +
+  labs(title = "The Results of 20 Random Hold-out (Out-of-Sample Validation) - US-All",
+       subtitle = "Comparison of Average MAPE: Model(2-2) vs Model(3)",
+       x = "",
+       y = "MAPE (%)",
+       caption = "Error bars represent standard error") +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 18, face = "bold"),
+        plot.subtitle = element_text(size = 10),
+        axis.text = element_text(size = 14),
+        plot.caption = element_text(hjust = 0, size = 10, face = "italic")) +
+  stat_summary(fun = mean, geom = "text", vjust = -0.5, 
+               aes(label = sprintf("%.4f", ..y..)), size = 4)
+
+print(p_rep_mape_us)
+# US-Male -----------------------------------------------------------------
+# model(2-2) --------------------------------------------------------------
+# Array to store MAPE values for us_suicide_male_tv_all
+mape_values_us_suicide_male_tv_all <- numeric(20)
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:20) {
+  # Get the dataframe name
+  df_us_name <- paste0("df_main_us_rep", rep_num)
+  df_us <- get(df_us_name)
+  threshold_date <- selected_thresholds_us[rep_num]
+  threshold_end <- selected_thresholds_end_us[rep_num]
+  
+  # Create state space model
+  ss_name <- paste0("ss_us_suicide_male_tv_all_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_us$suicide_rate_male_scaled[df_us$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_us$suicide_rate_male_scaled[df_us$term <= threshold_date], nseasons=12)
+  
+  # Add dynamic regression
+  ss <- AddDynamicRegression(ss,
+                             formula(suicide_rate_male_scaled ~                                                                      
+                                       query_suicide_scaled + query_depression_scaled + query_anxiety_scaled +                                                                    
+                                       query_suicide_methods_scaled + query_abuse_scaled + query_commit_suicide_scaled +                                                                    
+                                       query_loneliness_scaled + query_divorce_scaled + query_unemployment_scaled +                                                                    
+                                       query_how_to_commit_suicide_scaled +                                                                    
+                                       query_manic_depression_scaled + query_social_welfare_scaled +                                                                    
+                                       query_kill_yourself_scaled + query_alcohol_scaled + query_suicide_ideation_scaled +                                                                    
+                                       query_suicide_hotline_scaled + query_suicide_help_scaled +                                                                    
+                                       query_severe_depression_scaled + query_suicide_attempt_scaled +                                                                    
+                                       query_insomnia_scaled +                                                                    
+                                       query_headache_scaled + query_suicidal_thoughts_scaled +                                                                    
+                                       query_how_to_kill_yourself_scaled + query_major_depression_scaled +                                                                    
+                                       query_schizophrenia_scaled + query_stress_scaled + query_anxiety_disorder_scaled +                                                                    
+                                       query_marriage_scaled + query_bipolar_disorder_scaled + query_cancer_scaled +                                                                    
+                                       query_asthma_scaled + query_pain_scaled + query_antidepressant_scaled +                                                                    
+                                       query_relationship_breakup_scaled + query_allergy_scaled + query_teen_suicide_scaled +                                                                    
+                                       query_job_scaled + query_drunkenness_scaled + query_hanging_scaled +                                                                    
+                                       query_illicit_drugs_scaled + query_social_benefits_scaled +                                                                    
+                                       query_hydrogen_sulfide_scaled + query_stock_market_scaled +                                                                    
+                                       query_domestic_violence_scaled + query_hypnotics_scaled +                                                                    
+                                       query_charcoal_burning_scaled + query_chronic_illness_scaled +                                                                    
+                                       query_suicide_prevention_scaled + query_lawsuit_scaled +                                                                    
+                                       query_alcohol_abstinence_scaled + query_religious_belief_scaled),                                         
+                             data = df_us %>% filter(term <= threshold_date))
+  
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_us_suicide_male_tv_all_rep", rep_num)
+  assign(model_name, bsts(formula = df_us$suicide_rate_male_scaled[df_us$term <= threshold_date],
+                          state.specification = ss,
+                          niter = 5000,
+                          family = "gaussian",
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_us_suicide_male_tv_all_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_us,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_us[[paste0("pre_bsts_us_suicide_male_tv_all_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_us[[paste0("pre_bsts_us_suicide_male_tv_all_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_us[[paste0("pre_bsts_us_suicide_male_tv_all_rep", rep_num)]], 
+    min(df_us$suicide_rate_male[df_us$term <= threshold_date]),
+    max(df_us$suicide_rate_male[df_us$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_us_suicide_male_tv_all_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_us[[paste0("pre_bsts_us_suicide_male_tv_all_rep", rep_num)]][df_us$term > threshold_date & df_us$term <= threshold_end], 
+    df_us$suicide_rate_male[df_us$term > threshold_date & df_us$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_us_suicide_male_tv_all[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_us_name, df_us)
+}
+plan(sequential)
+
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_us_suicide_male_tv_all <- data.frame(
+  replication = 1:20,
+  val_start = selected_thresholds_us %m+% months(1),
+  mape = mape_values_us_suicide_male_tv_all
+)
+
+# model(3) ------------------------------------------------------------------
+# Array to store MAPE values for us_suicide_male_spike_slab
+mape_values_us_suicide_male_spike_slab <- numeric(20)
+n_param_us <- 51
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:20) {
+  # Get the dataframe name
+  df_us_name <- paste0("df_main_us_rep", rep_num)
+  df_us <- get(df_us_name)
+  threshold_date <- selected_thresholds_us[rep_num]
+  threshold_end <-selected_thresholds_end_us[rep_num]
+  
+  # Create state space model
+  ss_name <- paste0("ss_us_suicide_male_spike_slab_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_us$suicide_rate_male_scaled[df_us$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_us$suicide_rate_male_scaled[df_us$term <= threshold_date], nseasons=12)
+  
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_us_suicide_male_spike_slab_rep", rep_num)
+  assign(model_name, bsts(formula_us_male,
+                          data = df_us %>% filter(term <= threshold_date), 
+                          state.specification =  ss, 
+                          niter = 5000,
+                          expected.model.size = n_param_us*0.1, 
+                          family = "gaussian", 
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_us_suicide_male_spike_slab_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_us,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_us[[paste0("pre_bsts_us_suicide_male_spike_slab_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_us[[paste0("pre_bsts_us_suicide_male_spike_slab_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_us[[paste0("pre_bsts_us_suicide_male_spike_slab_rep", rep_num)]], 
+    min(df_us$suicide_rate_male[df_us$term <= threshold_date]),
+    max(df_us$suicide_rate_male[df_us$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_us_suicide_male_spike_slab_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_us[[paste0("pre_bsts_us_suicide_male_spike_slab_rep", rep_num)]][df_us$term > threshold_date & df_us$term <= threshold_end], 
+    df_us$suicide_rate_male[df_us$term > threshold_date & df_us$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_us_suicide_male_spike_slab[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_us_name, df_us)
+}
+plan(sequential)
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_us_suicide_male_spike_slab <- data.frame(
+  replication = 1:20,
+  val_start = selected_thresholds_us %m+% months(1),
+  mape = mape_values_us_suicide_male_spike_slab
+)
+# Compara US-Male ----------------------------------------------------------
+# Create improved summary dataframes with proper validation periods
+mape_summary_us_suicide_male_tv_all <- data.frame(
+  replication = 1:20,
+  val_start = as.character(as.Date(selected_thresholds_us) %m+% months(1)),
+  val_end = as.character(selected_thresholds_end_us),
+  mape_model2_2 = mape_values_us_suicide_male_tv_all
+)
+
+mape_summary_us_suicide_male_spike_slab <- data.frame(
+  replication = 1:20,
+  val_start = as.character(as.Date(selected_thresholds_us) %m+% months(1)),
+  val_end = as.character(selected_thresholds_end_us),
+  mape_model3 = mape_values_us_suicide_male_spike_slab
+)
+
+
+# Combine the dataframes horizontally with a left join
+mape_comparison_us_suicide_male <- merge(
+  mape_summary_us_suicide_male_tv_all,
+  mape_summary_us_suicide_male_spike_slab,
+  by = c("replication", "val_start", "val_end")
+)
+
+# Sort by replication in ascending order
+mape_comparison_us_suicide_male <- mape_comparison_us_suicide_male[order(mape_comparison_us_suicide_male$replication), ]
+
+
+# Convert from wide to long format
+mape_comparison_male_long <- melt(mape_comparison_us_suicide_male, 
+                                  id.vars = c("replication", "val_start", "val_end"),
+                                  measure.vars = c("mape_model2_2", "mape_model3"),
+                                  variable.name = "model", 
+                                  value.name = "MAPE")
+
+# Rename factor levels for better labels
+mape_comparison_male_long$model <- factor(mape_comparison_male_long$model, 
+                                          levels = c("mape_model2_2", "mape_model3"),
+                                          labels = c("Model (2-2)", "Model (3)"))
+
+# Create the plot
+p_rep_mape_us_male <- ggplot(mape_comparison_male_long, aes(x = model, y = MAPE, fill = model)) +
+  stat_summary(fun = mean, geom = "bar", alpha = 0.7, width = 0.6) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  geom_jitter(position = position_jitter(width = 0.15), alpha = 0.5) +
+  scale_fill_manual(values = c("#3498db", "#e74c3c")) +
+  theme_minimal() +
+  labs(title = "The Results of 20 Random Hold-out (Out-of-Sample Validation) - US-Male",
+       subtitle = "Comparison of Average MAPE: Model(2-2) vs Model(3)",
+       x = "",
+       y = "MAPE (%)",
+       caption = "Error bars represent standard error") +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 18, face = "bold"),
+        plot.subtitle = element_text(size = 10),
+        axis.text = element_text(size = 14),
+        plot.caption = element_text(hjust = 0, size = 10, face = "italic")) +
+  stat_summary(fun = mean, geom = "text", vjust = -0.5, 
+               aes(label = sprintf("%.4f", ..y..)), size = 4)
+
+print(p_rep_mape_us_male)
+# JP-Female -----------------------------------------------------------------
+# model(1) ----------------------------------------------------------------
+# Array to store MAPE values for jp_suicide_female_trend_seas
+mape_values_jp_suicide_female_trend_seas <- numeric(10)
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:10) {
+  # Get the dataframe name
+  df_jp_name <- paste0("df_main_jp_rep", rep_num)
+  df_jp <- get(df_jp_name)
+  threshold_date <- selected_thresholds_jp[rep_num]
+  threshold_end <-selected_thresholds_end_jp[rep_num]
+  
+  # Create state space model
+  ss_name <- paste0("ss_jp_suicide_female_trend_seas_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_jp$suicide_rate_female_scaled[df_jp$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_jp$suicide_rate_female_scaled[df_jp$term <= threshold_date], nseasons=12)
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_jp_suicide_female_trend_seas_rep", rep_num)
+  assign(model_name, bsts(formula = df_jp$suicide_rate_female_scaled[df_jp$term <= threshold_date],
+                          state.specification = ss,
+                          niter = 5000,
+                          family = "gaussian",
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_jp_suicide_female_trend_seas_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_jp,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_jp[[paste0("pre_bsts_jp_suicide_female_trend_seas_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_jp[[paste0("pre_bsts_jp_suicide_female_trend_seas_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_jp[[paste0("pre_bsts_jp_suicide_female_trend_seas_rep", rep_num)]], 
+    min(df_jp$suicide_rate_female[df_jp$term <= threshold_date]),
+    max(df_jp$suicide_rate_female[df_jp$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_jp_suicide_female_trend_seas_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_jp[[paste0("pre_bsts_jp_suicide_female_trend_seas_rep", rep_num)]][df_jp$term > threshold_date & df_jp$term <= threshold_end], 
+    df_jp$suicide_rate_female[df_jp$term > threshold_date & df_jp$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_jp_suicide_female_trend_seas[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_jp_name, df_jp)
+}
+plan(sequential)
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_jp_suicide_female_trend_seas <- data.frame(
+  replication = 1:10,
+  val_start = as.character(as.Date(selected_thresholds_jp) %m+% months(1)),
+  mape = mape_values_jp_suicide_female_trend_seas
+)
+# model(3) ----------------------------------------------------------------
+# Array to store MAPE values for jp_suicide_female_spike_slab
+mape_values_jp_suicide_female_spike_slab <- numeric(10)
+n_param_jp <- 46
+# Loop through each replication
+plan(multisession, workers = parallel::detectCores() - 1)
+for(rep_num in 1:10) {
+  # Get the dataframe name
+  df_jp_name <- paste0("df_main_jp_rep", rep_num)
+  df_jp <- get(df_jp_name)
+  threshold_date <- selected_thresholds_jp[rep_num]
+  threshold_end <-selected_thresholds_end_jp[rep_num]
+  
+  # Create state space model
+  ss_name <- paste0("ss_jp_suicide_female_spike_slab_rep", rep_num)
+  
+  # Add local levels
+  assign(ss_name, AddLocalLevel(state.specification=list(), 
+                                df_jp$suicide_rate_female_scaled[df_jp$term <= threshold_date]))
+  
+  # Add seasonality
+  ss <- get(ss_name)
+  ss <- AddSeasonal(ss, df_jp$suicide_rate_female_scaled[df_jp$term <= threshold_date], nseasons=12)
+  
+  assign(ss_name, ss)
+  
+  # Fit the model
+  model_name <- paste0("model_bsts_jp_suicide_female_spike_slab_rep", rep_num)
+  assign(model_name, bsts(formula_jp_female,
+                          data = df_jp %>% filter(term <= threshold_date), 
+                          state.specification =  ss, 
+                          niter = 5000,
+                          expected.model.size = n_param_jp*0.1, 
+                          family = "gaussian", 
+                          seed = 42))
+  
+  # Make predictions
+  pre_name <- paste0("pre_bsts_jp_suicide_female_spike_slab_rep", rep_num)
+  model <- get(model_name)
+  assign(pre_name, predict(model,
+                           newdata = df_jp,
+                           niter = 5000,
+                           burn = 1000,
+                           seed = 42))
+  
+  # Add predictions to dataframe
+  pred <- get(pre_name)
+  df_jp[[paste0("pre_bsts_jp_suicide_female_spike_slab_rep", rep_num)]] <- pred$mean
+  
+  # Inverse scale transformation
+  df_jp[[paste0("pre_bsts_jp_suicide_female_spike_slab_rep", rep_num)]] <- scale_max_min_vector_inverse(
+    df_jp[[paste0("pre_bsts_jp_suicide_female_spike_slab_rep", rep_num)]], 
+    min(df_jp$suicide_rate_female[df_jp$term <= threshold_date]),
+    max(df_jp$suicide_rate_female[df_jp$term <= threshold_date])
+  )
+  
+  # Calculate accuracy metrics
+  accuracy_name <- paste0("accuracy_results_jp_suicide_female_spike_slab_rep", rep_num)
+  assign(accuracy_name, accuracy(
+    df_jp[[paste0("pre_bsts_jp_suicide_female_spike_slab_rep", rep_num)]][df_jp$term > threshold_date & df_jp$term <= threshold_end], 
+    df_jp$suicide_rate_female[df_jp$term > threshold_date & df_jp$term <= threshold_end]
+  ))
+  
+  # Store MAPE value
+  acc_results <- get(accuracy_name)
+  mape_values_jp_suicide_female_spike_slab[rep_num] <- acc_results[5]
+  
+  # Update the dataframe in the global environment
+  assign(df_jp_name, df_jp)
+}
+plan(sequential)
+# Create a summary dataframe with thresholds and MAPE values
+mape_summary_jp_suicide_female_spike_slab <- data.frame(
+  replication = 1:10,
+  val_start = as.character(as.Date(selected_thresholds_jp) %m+% months(1)),
+  mape = mape_values_jp_suicide_female_spike_slab
+)
+# Compara JP-Female ----------------------------------------------------------
+# Create improved summary dataframes with proper validation periods
+mape_summary_jp_suicide_female_trend_seas <- data.frame(
+  replication = 1:10,
+  val_start = as.character(as.Date(selected_thresholds_jp) %m+% months(1)),
+  val_end = as.character(as.Date(selected_thresholds_end_jp)),
+  mape_model1 = mape_values_jp_suicide_female_trend_seas
+)
+
+mape_summary_jp_suicide_female_spike_slab <- data.frame(
+  replication = 1:10,
+  val_start = as.character(as.Date(selected_thresholds_jp) %m+% months(1)),
+  val_end = as.character(as.Date(selected_thresholds_end_jp)),
+  mape_model3 = mape_values_jp_suicide_female_spike_slab
+)
+
+
+# Rename the mape columns to distinguish between models
+names(mape_summary_jp_suicide_female_trend_seas)[4] <- "mape_model1"
+names(mape_summary_jp_suicide_female_spike_slab)[4] <- "mape_model3"
+
+# Combine the dataframes horizontally with a left join
+mape_comparison_jp_suicide_female <- merge(
+  mape_summary_jp_suicide_female_trend_seas,
+  mape_summary_jp_suicide_female_spike_slab,
+  by = c("replication", "val_start", "val_end")
+)
+
+# Convert from wide to long format for JP female data
+mape_comparison_jp_female_long <- melt(mape_comparison_jp_suicide_female, 
+                                       id.vars = c("replication", "val_start", "val_end"),
+                                       measure.vars = c("mape_model1", "mape_model3"),
+                                       variable.name = "model", 
+                                       value.name = "MAPE")
+
+# Rename factor levels for better labels
+mape_comparison_jp_female_long$model <- factor(mape_comparison_jp_female_long$model, 
+                                               levels = c("mape_model1", "mape_model3"),
+                                               labels = c("Model (1)", "Model (3)"))
+
+# Create the plot
+p_rep_mape_jp_female <- ggplot(mape_comparison_jp_female_long, aes(x = model, y = MAPE, fill = model)) +
+  stat_summary(fun = mean, geom = "bar", alpha = 0.7, width = 0.6) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +
+  geom_jitter(position = position_jitter(width = 0.15), alpha = 0.5) +
+  scale_fill_manual(values = c("#3498db", "#e74c3c")) +
+  theme_minimal() +
+  labs(title = "The Results of 10 Random Hold-out (Out-of-Sample Validation) - JP-Female",
+       subtitle = "Comparison of Average MAPE: Model(1) vs Model(3)",
+       x = "",
+       y = "MAPE (%)",
+       caption = "Error bars represent standard error") +
+  theme(legend.position = "none",
+        plot.title = element_text(size = 18, face = "bold"),
+        plot.subtitle = element_text(size = 10),
+        axis.text = element_text(size = 14),
+        plot.caption = element_text(hjust = 0, size = 10, face = "italic")) +
+  stat_summary(fun = mean, geom = "text", vjust = -0.5, 
+               aes(label = sprintf("%.4f", ..y..)), size = 4)
+
+print(p_rep_mape_jp_female)
