@@ -1,0 +1,25 @@
+Data Sources for SSM Suicide Predictions Analysis
+================================================
+
+who_data_std.csv
+- World Health Organization, n.d. Suicide rates (per 100 000), age-standardized [WWW Document]. URL https://www.who.int/data/gho/data/indicators/indicator-details/GHO/age-standardized-suicide-rates-(per-100-000-population)
+
+es_pop.csv
+- National Statistics Institute, n.d. Spanish Statistical Office [WWW Document]. URL https://www.ine.es/en/
+
+query_es.csv
+- Google, n.d. Google Trends [WWW Document]. URL https://trends.google.com/trends/
+
+suicide_es.csv
+- National Statistics Institute, n.d. Spanish Statistical Office [WWW Document]. URL https://www.ine.es/en/
+
+es_unemp.csv
+- International Labour Organization, n.d. Data tools to find and download labour statistics - ILOSTAT [WWW Document]. URL https://ilostat.ilo.org/data/#
+
+es_solar_temp.csv
+- National Aeronautics and Space Administration a, n.d. APIs [WWW Document]. URL https://power.larc.nasa.gov/docs/services/.
+- Geographic Information System of the Commission, n.d. Territorial units for statistics (NUTS) - GISCO - Eurostat [WWW Document]. URL https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units/territorial-units-statistics?utm_source=chatgpt.com.
+
+※ The code for data weighting calculations and API retrieval is entirely replicated in natural_env_data.py
+
+Generated on: 2025-09-23

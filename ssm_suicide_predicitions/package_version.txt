@@ -1,0 +1,64 @@
+Package Versions for natural_env_data.py
+==========================================
+
+Python: 3.11.8 (main, Apr 29 2024, 16:36:53) [Clang 15.0.0 (clang-1500.1.0.2.5)]
+
+Main packages:
+- geopandas: 1.1.1
+- numpy: 1.26.4
+- pandas: 2.2.2
+- requests: 2.31.0
+- shapely: (part of geopandas dependencies)
+
+Built-in modules:
+- ast (built-in)
+- datetime (built-in)
+- collections (built-in)
+- os (built-in)
+- math (built-in)
+- time (built-in)
+
+Generated on: 2025-09-23
+
+R Language Packages for analysis.R
+===================================
+
+R packages used:
+- tidyverse
+- tseries
+- urca
+- KFAS
+- forecast
+- future
+- furrr
+- gridExtra
+
+R Version: R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Ventura 13.6.3
+
+Attached packages:
+- gridExtra_2.3
+- furrr_0.3.1
+- future_1.33.1
+- forecast_8.22.0
+- KFAS_1.5.1
+- urca_1.3-3
+- tseries_0.10-55
+- forcats_1.0.0
+- stringr_1.5.1
+- dplyr_1.1.4
+- purrr_1.0.2
+- readr_2.1.5
+- tidyr_1.3.1
+- tibble_3.2.1
+- ggplot2_3.4.4
+- tidyverse_2.0.0
+
+Other loaded packages (selected):
+- lubridate_1.9.3
+- timeDate_4032.109
+- fracdiff_1.5-3
+- lmtest_0.9-40
+- zoo_1.8-12
+
