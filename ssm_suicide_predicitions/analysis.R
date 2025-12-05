@@ -3929,6 +3929,238 @@ grid.arrange(
 )
 dev.off()
 
+# predicion like monitoring----------------------------------------------------------
+monitoring_start<- "2022-01-01"
+monitoring_end<- "2023-12-01"
+#create dataframe for prediction
+df_final_pred <- df %>% select(
+  term,
+  num_suicide_total,
+  num_suicide_male,
+  num_suicide_female,
+  pop_female,
+  pop_male,
+  pop_total,
+  query_suicide,
+  suicide_rate_total,
+  suicide_rate_male,
+  suicide_rate_female,
+)
+
+df_final_pred <- df_final_pred %>% mutate(
+  suicide_rate_total_y   = if_else(term >= as.Date(monitoring_start) & term <= as.Date(monitoring_end), NA_real_, suicide_rate_total),
+  suicide_rate_male_y    = if_else(term >= as.Date(monitoring_start) & term <= as.Date(monitoring_end), NA_real_, suicide_rate_male),
+  suicide_rate_female_y  = if_else(term >= as.Date(monitoring_start) & term <= as.Date(monitoring_end), NA_real_, suicide_rate_female)
+)
+
+# Add scaled versions using monitoring_start as cutoff date
+df_final_pred <- df_final_pred %>% mutate(
+  suicide_rate_total_y_scaled  = scale_max_min_vector(df_final_pred, "suicide_rate_total_y", as.Date(monitoring_start)),
+  suicide_rate_male_y_scaled   = scale_max_min_vector(df_final_pred, "suicide_rate_male_y", as.Date(monitoring_start)),
+  suicide_rate_female_y_scaled = scale_max_min_vector(df_final_pred, "suicide_rate_female_y", as.Date(monitoring_start))
+)
+
+
+# Store min/max values for inverse scaling later
+suicide_rate_total_min_for_mnt <- min(df_final_pred$suicide_rate_total[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+suicide_rate_total_max_for_mnt <- max(df_final_pred$suicide_rate_total[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+suicide_rate_male_min_for_mnt <- min(df_final_pred$suicide_rate_male[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+suicide_rate_male_max_for_mnt <- max(df_final_pred$suicide_rate_male[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+suicide_rate_female_min_for_mnt <- min(df_final_pred$suicide_rate_female[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+suicide_rate_female_max_for_mnt <- max(df_final_pred$suicide_rate_female[df_final_pred$term < as.Date(monitoring_start)], na.rm = TRUE)
+
+# Overall----------------------------------------------------------
+model_for_mnt_overall <- SSModel(
+    df_final_pred$suicide_rate_total_y_scaled ~ SSMtrend(degree = 1, Q = NA) + SSMseasonal(period = 12, sea.type = "dummy") ,
+    H = NA
+  )
+  fit_for_mnt_overall <- fitSSM(model_for_mnt_overall, inits = c(1, 1))
+  kfs_for_mnt_overall <- KFS(fit_for_mnt_overall$model)
+  pred_for_mnt_overall <- predict(fit_for_mnt_overall$model, interval = "prediction", level = 0.50)
+
+  # base value
+  df_final_pred$num_suicide_total_pred_mnt <- scale_max_min_vector_inverse(
+    pred_for_mnt_overall[1:nrow(pred_for_mnt_overall), 1],
+    suicide_rate_total_min_for_mnt,
+    suicide_rate_total_max_for_mnt
+  ) * df_final_pred$pop_total / 100000
+
+  # lower value
+  df_final_pred$num_suicide_total_pred_mnt_lwr <- scale_max_min_vector_inverse(
+    pred_for_mnt_overall[1:nrow(pred_for_mnt_overall), 2],
+    suicide_rate_total_min_for_mnt,
+    suicide_rate_total_max_for_mnt
+  ) * df_final_pred$pop_total / 100000
+
+  # upper value
+  df_final_pred$num_suicide_total_pred_mnt_upr <- scale_max_min_vector_inverse(
+    pred_for_mnt_overall[1:nrow(pred_for_mnt_overall), 3],
+    suicide_rate_total_min_for_mnt,
+    suicide_rate_total_max_for_mnt
+  )*df_final_pred$pop_total/100000
+
+#confirtm accuracy
+acc_monitoring_overall <- accuracy(df_final_pred$num_suicide_total_pred_mnt[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)], df_final_pred$num_suicide_total[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)])
+print(acc_monitoring_overall)
+mape_monitoring_overall <- acc_monitoring_overall[5]
+# Male----------------------------------------------------------
+model_for_mnt_male <- SSModel(
+    df_final_pred$suicide_rate_male_y_scaled ~ SSMtrend(degree = 1, Q = NA) + SSMseasonal(period = 12, sea.type = "dummy") ,
+    H = NA
+  )
+  fit_for_mnt_male <- fitSSM(model_for_mnt_male, inits = c(1, 1))
+  kfs_for_mnt_male <- KFS(fit_for_mnt_male$model)
+  pred_for_mnt_male <- predict(fit_for_mnt_male$model, interval = "prediction", level = 0.50)
+
+
+  # base value
+  df_final_pred$num_suicide_male_pred_mnt <- scale_max_min_vector_inverse(
+    pred_for_mnt_male[1:nrow(pred_for_mnt_male), 1],
+    suicide_rate_male_min_for_mnt,
+    suicide_rate_male_max_for_mnt
+  ) * df_final_pred$pop_male / 100000
+
+  # lower value
+  df_final_pred$num_suicide_male_pred_mnt_lwr <- scale_max_min_vector_inverse(
+    pred_for_mnt_male[1:nrow(pred_for_mnt_male), 2],
+    suicide_rate_male_min_for_mnt,
+    suicide_rate_male_max_for_mnt
+  ) * df_final_pred$pop_male / 100000
+
+  # upper value
+  df_final_pred$num_suicide_male_pred_mnt_upr <- scale_max_min_vector_inverse(
+    pred_for_mnt_male[1:nrow(pred_for_mnt_male), 3],
+    suicide_rate_male_min_for_mnt,
+    suicide_rate_male_max_for_mnt
+  ) * df_final_pred$pop_male / 100000
+
+#confirm accuracy
+acc_monitoring_male <- accuracy(df_final_pred$num_suicide_male_pred_mnt[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)], df_final_pred$num_suicide_male[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)])
+print(acc_monitoring_male)
+mape_monitoring_male <- acc_monitoring_male[5]
+
+# Female----------------------------------------------------------
+model_for_mnt_female <- SSModel(
+    df_final_pred$suicide_rate_female_y_scaled ~ SSMtrend(degree = 1, Q = NA) + SSMseasonal(period = 12, sea.type = "dummy") ,
+    H = NA
+  )
+  fit_for_mnt_female <- fitSSM(model_for_mnt_female, inits = c(1, 1))
+  kfs_for_mnt_female <- KFS(fit_for_mnt_female$model)
+  pred_for_mnt_female <- predict(fit_for_mnt_female$model, interval = "prediction", level = 0.50)
+
+  # base value
+  df_final_pred$num_suicide_female_pred_mnt <- scale_max_min_vector_inverse(
+    pred_for_mnt_female[1:nrow(pred_for_mnt_female), 1],
+    suicide_rate_female_min_for_mnt,
+    suicide_rate_female_max_for_mnt
+  ) * df_final_pred$pop_female / 100000
+
+  # lower value
+  df_final_pred$num_suicide_female_pred_mnt_lwr <- scale_max_min_vector_inverse(
+    pred_for_mnt_female[1:nrow(pred_for_mnt_female), 2],
+    suicide_rate_female_min_for_mnt,
+    suicide_rate_female_max_for_mnt
+  ) * df_final_pred$pop_female / 100000
+
+  # upper value
+  df_final_pred$num_suicide_female_pred_mnt_upr <- scale_max_min_vector_inverse(
+    pred_for_mnt_female[1:nrow(pred_for_mnt_female), 3],
+    suicide_rate_female_min_for_mnt,
+    suicide_rate_female_max_for_mnt
+  ) * df_final_pred$pop_female / 100000
+
+#confirm accuracy
+acc_monitoring_female <- accuracy(df_final_pred$num_suicide_female_pred_mnt[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)], df_final_pred$num_suicide_female[df_final_pred$term >= as.Date(monitoring_start) & df_final_pred$term <= as.Date(monitoring_end)])
+print(acc_monitoring_female)
+mape_monitoring_female <- acc_monitoring_female[5]
+
+# Comparison plots for monitoring period----------------------------------------------------------
+# Filter data for monitoring period
+monitoring_data <- df_final_pred %>%
+  filter(term >= as.Date(monitoring_start) & term <= as.Date(monitoring_end))
+
+# Overall comparison plot
+plot_overall_mnt <- monitoring_data %>%
+  ggplot(aes(x = term)) +
+  geom_line(aes(y = num_suicide_total, color = "Actual"), size = 1) +
+  geom_line(aes(y = num_suicide_total_pred_mnt, color = "Predicted by BSTS"), size = 1) +
+  geom_ribbon(aes(ymin = num_suicide_total_pred_mnt_lwr, ymax = num_suicide_total_pred_mnt_upr), 
+              alpha = 0.2, fill = "lightblue") +
+  labs(title = "Overall Suicide Deaths: Actual vs Predicted by BSTS with 50% CI (Jan 2022-Dec 2023)",
+       x = "Date", y = "Suicide Deaths", color = "Value") +
+  scale_y_continuous(limits = c(0, NA)) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    axis.title.x = element_text(size = 10),
+    axis.text.x = element_text(size = 10, angle = 60, hjust = 1),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  ) +
+  annotate("text", x = as.Date("2023-01-01"), y = 150, 
+           label = paste("MAPE =", round(mape_monitoring_overall, 2), "%"), 
+           hjust = 0.5, vjust = 0.5, size = 4, fontface = "bold")
+
+# Male comparison plot
+plot_male_mnt <- monitoring_data %>%
+  ggplot(aes(x = term)) +
+  geom_line(aes(y = num_suicide_male, color = "Actual"), size = 1) +
+  geom_line(aes(y = num_suicide_male_pred_mnt, color = "Predicted by BSTS"), size = 1) +
+  geom_ribbon(aes(ymin = num_suicide_male_pred_mnt_lwr, ymax = num_suicide_male_pred_mnt_upr), 
+              alpha = 0.2, fill = "lightblue") +
+  labs(title = "Male Suicide Deaths: Actual vs Predicted by BSTS with 50% CI (Jan 2022-Dec 2023)",
+       x = "Date", y = "Suicide Deaths", color = "Value") +
+  scale_y_continuous(limits = c(0, NA)) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    axis.title.x = element_text(size = 10),
+    axis.text.x = element_text(size = 10, angle = 60, hjust = 1),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  ) +
+  annotate("text", x = as.Date("2023-01-01"), y = 150, 
+           label = paste("MAPE =", round(mape_monitoring_male, 2), "%"), 
+           hjust = 0.5, vjust = 0.5, size = 4, fontface = "bold")
+
+# Female comparison plot
+plot_female_mnt <- monitoring_data %>%
+  ggplot(aes(x = term)) +
+  geom_line(aes(y = num_suicide_female, color = "Actual"), size = 1) +
+  geom_line(aes(y = num_suicide_female_pred_mnt, color = "Predicted by BSTS"), size = 1) +
+  geom_ribbon(aes(ymin = num_suicide_female_pred_mnt_lwr, ymax = num_suicide_female_pred_mnt_upr), 
+              alpha = 0.2, fill = "lightblue") +
+  labs(title = "Female Suicide Deaths: Actual vs Predicted by BSTS with 50% CI (Jan 2022-Dec 2023)",
+       x = "Date", y = "Suicide Deaths", color = "Value") +
+  scale_y_continuous(limits = c(0, NA)) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 12, hjust = 0.5),
+    axis.title.x = element_text(size = 10),
+    axis.text.x = element_text(size = 10, angle = 60, hjust = 1),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  ) +
+  annotate("text", x = as.Date("2023-01-01"), y = 45, 
+           label = paste("MAPE =", round(mape_monitoring_female, 2), "%"), 
+           hjust = 0.5, vjust = 0.5, size = 4, fontface = "bold")
+# Save the combined plot
+png("Figure_3.png",
+    width = 16.3, height = 10, units = "in", res = 300)
+grid.arrange(
+  plot_overall_mnt,
+  plot_male_mnt,
+  plot_female_mnt,
+  ncol = 2
+)
+dev.off()
+
 # save----------------------------------------------------------# 
 save.image("analysis.RData")
 
