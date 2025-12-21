@@ -18,7 +18,7 @@ es_unemp.csv
 
 es_solar_temp.csv
 - National Aeronautics and Space Administration a, n.d. APIs [WWW Document]. URL https://power.larc.nasa.gov/docs/services/.
-- Geographic Information System of the Commission, n.d. Territorial units for statistics (NUTS) - GISCO - Eurostat [WWW Document]. URL https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units/territorial-units-statistics?utm_source=chatgpt.com.
+- Geographic Information System of the Commission, n.d. Territorial units for statistics (NUTS) - GISCO - Eurostat [WWW Document]. URL https://ec.europa.eu/eurostat/web/gisco/geodata/statistical-units/territorial-units-statistics.
 
 ※ The code for data weighting calculations and API retrieval is entirely replicated in natural_env_data.py
 
