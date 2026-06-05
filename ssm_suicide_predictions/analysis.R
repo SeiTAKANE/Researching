@@ -192,6 +192,62 @@ png("Figure_1.png",
 print(p_who)
 dev.off()
 
+
+#Spain vs other EU
+# EU member countries (excluding Spain)
+eu_countries <- c(
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus",
+  "Czechia", "Denmark", "Estonia", "Finland", "France",
+  "Germany", "Greece", "Hungary", "Ireland", "Italy",
+  "Latvia", "Lithuania", "Luxembourg", "Malta",
+  "Netherlands (Kingdom of the)", "Poland", "Portugal",
+  "Romania", "Slovakia", "Slovenia", "Sweden"
+)
+
+# Calculate the average standardized rate for other EU countries (excluding Spain)
+other_eu_avg <- df_filtered_who %>%
+  filter(location %in% eu_countries) %>%
+  group_by(period) %>%
+  summarise(other_europe_std_rate = mean(std_rate, na.rm = TRUE))
+
+# Combine EU average and Spain data
+plot_data_who_eu <- other_eu_avg %>%
+  left_join(spain_data, by = "period")
+
+# Create the plot
+p_who_eu <- ggplot(plot_data_who_eu, aes(x = period)) +
+  geom_line(aes(y = other_europe_std_rate, color = "Other EU Countries")) +
+  geom_line(aes(y = spain_std_rate, color = "Spain")) +
+  theme_minimal() +
+  labs(
+    title = "Suicide Rate Trend (Standardized Rate): Spain vs Other EU Countries",
+    x = "Period",
+    y = "Standardized Rate",
+    color = "Country"
+  ) +
+  theme(
+    plot.title = element_text(size = 17, hjust = 0.5),
+    axis.title.x = element_text(size = 12),
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.title.y = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12),
+    legend.position = "bottom",
+    legend.key.size = unit(2, "cm"),
+    text = element_text()
+  ) +
+  scale_color_manual(values = c("Other EU Countries" = "blue", "Spain" = "red")) +
+  expand_limits(y = 0)
+
+windows()
+print(p_who_eu)
+
+png("Figure_1_EU.png",
+    width = 16, height = 8, units = "in", res = 300)
+print(p_who_eu)
+dev.off()
+
 # descriptive statistics----------------------------------------------------------
 # Long format data for plotting
   df_long <- df %>%
