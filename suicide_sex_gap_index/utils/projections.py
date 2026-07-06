@@ -38,6 +38,9 @@ class Projection:
         D_arr = np.asarray(D)
         T_arr = np.asarray(T)
 
+        if np.any(T_arr <= 0.0):
+            raise ValueError("T must be strictly positive")
+
         sign = np.where(D_arr >= 0, 1.0, -1.0)
 
         return sign * (np.abs(D_arr) + 1.0) * (T_arr / t0)
